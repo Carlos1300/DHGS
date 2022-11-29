@@ -27,8 +27,15 @@ export const Login = () => {
 
         if(res.status !== 200 && data.msg !== ''){
             alert(data.msg);
+            setEmail('');
+            setPassword('');
         }else{
-            sessionStorage.setItem('token', data.access_token);
+            localStorage.setItem('name', data.name);
+            localStorage.setItem('address', data.address);
+            localStorage.setItem('country', data.country);
+            localStorage.setItem('email', data.email);
+            localStorage.setItem('tel', data.tel);
+            localStorage.setItem('token', data.token);
             navigate('dashboard')
         }
     }
@@ -59,7 +66,7 @@ export const Login = () => {
                                                         Ingresar
                                                     </button>
                                                 </div>
-                                                <Link className="text-muted" to="/about">¿Olvidaste tu contrseña?</Link>
+                                                <Link className="text-muted" to="/about">¿Olvidaste tu contraseña?</Link>
                                             </div>
                                             <div className="d-flex align-items-center justify-content-center pb-4">
                                                 <p className="mb-0 me-2">¿Aún no tienes cuenta?</p>

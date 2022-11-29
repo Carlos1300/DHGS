@@ -4,6 +4,8 @@ from flask_cors import CORS
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
+import json
+
 app = Flask(__name__)
 ## MONGO Connection
 app.config['MONGO_URI']='mongodb://carav:avicar13@localhost:27017/datahub'
@@ -62,8 +64,11 @@ def updateUser(id):
     }})
     return jsonify({'mgs': 'Updated'})
 
+
+############################### DATAHUB ###########################################
+
 @app.route("/", methods=["POST"])
-def login():    
+def login():   
     email = request.json.get("email", None)
     
     user_info = db.find_one({'email': email})
@@ -77,7 +82,14 @@ def login():
             if password == user_info['password']:
                 
                 access_token = create_access_token(identity=email)
-                return jsonify(access_token=access_token)
+                return jsonify({
+                    "name": user_info['name'],
+                    "address": user_info['address'],
+                    "country": user_info['country'],
+                    "email": user_info['email'],
+                    "tel": user_info['tel'],
+                    "token": access_token
+                    })
             
             else:
                 return jsonify({"msg": "Contraseña incorrecta"}), 401
@@ -86,6 +98,19 @@ def login():
     else:
         return jsonify({"msg": "Usuario no dado de alta"}), 401
     
+@app.route('/method', methods=['POST'])
+def applyMethod():
+    
+    p = []
+    
+    methods = request.json.get('methods', None)
+    for method in methods:
+        print("The Method is: %s" % (method))
+        for param in methods[method]['params']:
+            p.append(methods[method]['params'][param])
+        print(p)
+    return jsonify(methods)
+ 
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -8,29 +8,49 @@ import HelpIcon from '@mui/icons-material/Help';
 import EmailIcon from '@mui/icons-material/Email';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { Link } from "react-router-dom";
 
-export const Sidebar = () =>{
+export const Sidebar = () => {
+
+  const logout = async () => {
+    localStorage.removeItem('name');
+    localStorage.removeItem('address');
+    localStorage.removeItem('country');
+    localStorage.removeItem('email');
+    localStorage.removeItem('tel');
+    localStorage.removeItem('token');
+  }
+
   return (
     <div className="sidebar">
         <div className="top">
-          <span className="logo">DataHub</span>
+          <Link to='/dashboard'>
+            <span className="logo" style={{textDecoration: "none"}}>DataHub</span>
+          </Link>
         </div>
         <hr></hr>
         <div className="center">
           <ul>
-            <p className="title">MAIN</p>
-            <li>
-              <DashboardIcon className="icon"/>
-              <span>Dashboard</span>
-            </li>
+            <p className="title">PRINCIPAL</p>
+            <Link to="/dashboard">
+              <li>
+                <DashboardIcon className="icon"/>
+                <span>Dashboard</span>
+              </li>
+            </Link>
+            <Link to="/cuenta">
             <li>
               <PersonIcon className="icon"/>
               <span>Mi Cuenta</span>
             </li>
-            <li>
-              <InventoryIcon className="icon"/>
-              <span>Repositorio</span>
-            </li>
+            </Link>
+            <Link to="/repo">
+              <li>
+                <InventoryIcon className="icon"/>
+                <span>Repositorio</span>
+              </li>
+            </Link>
             <p className="title">PROCESOS</p>
             <li>
               <FileUploadIcon className="icon"/>
@@ -53,9 +73,15 @@ export const Sidebar = () =>{
               <EmailIcon className="icon"/>
               <span>Contáctanos</span>
             </li>
+            <p className="title">CERRAR SESIÓN</p>
+            <Link to="/">
+              <li onClick={logout}>
+                <LogoutIcon className="icon"/>
+                <span>Salir</span>
+              </li>
+            </Link>
           </ul>
         </div>
-        <div className="bottom">options</div>
     </div>
   )
 }
