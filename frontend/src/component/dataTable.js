@@ -1,6 +1,6 @@
 import React from "react";
 import "../general.scss";
-import { DataGrid} from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import { Link } from "react-router-dom";
 
 const columns = [
