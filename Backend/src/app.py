@@ -110,8 +110,7 @@ def getProjects(email):
             'id': id,
             '_id': str(ObjectId(doc['_id'])),
             'ProjectName': doc["ProjectName"],
-            "DataBaseName": doc["DataBaseName"],
-            "status": "desactivado"
+            "DataBaseName": doc["DataBaseName"]
         })
         
         

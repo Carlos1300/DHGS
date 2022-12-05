@@ -44,7 +44,6 @@ export const Login = () => {
             localStorage.setItem('email', data.email);
             localStorage.setItem('tel', data.tel);
             localStorage.setItem('token', data.token);
-            localStorage.setItem('project', 'None')
             navigate('dashboard')
         }
     }

@@ -4,7 +4,7 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import { Dashboard } from "./component/dashboard";
 // import {Users} from './component/users';
 // import {Navbar} from './component/navbar';
-import {Login} from './component/login';
+import { Login } from './component/login';
 import { List } from "./component/list";
 import { Single } from "./component/single";
 import { New } from "./component/new";

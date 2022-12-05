@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "../general.scss";
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from "react-router-dom";
+import { ProjectContext } from "../context/projectContext";
 
 const columns = [
   { field: '_id', hide: true},
   { field: 'id', headerName: "ID" },
   { field: 'ProjectName', headerName: "Nombre de Proyecto", width: 330},
-  { field: "DataBaseName", headerName: "Base de Datos", width: 230 },
-  { field: "status", headerName: "Estado", width: 160,
-  renderCell: (params) =>{
-    return(
-      <div className={`cellWithStatus ${params.row.status}`}>{params.row.status}</div>
-    )
-  }}
+  { field: "DataBaseName", headerName: "Base de Datos", width: 230 }
+  // { field: "status", headerName: "Estado", width: 160,
+  // renderCell: (params) =>{
+  //   return(
+  //     <div className={`cellWithStatus ${params.row.status}`}>{params.row.status}</div>
+  //   )
+  // }}
   // { field: 'lastName', headerName: 'Last name', width: 130 },
   // {
   //   field: 'age',
@@ -39,9 +40,9 @@ const API = process.env.REACT_APP_API;
 
 export const DataTable = () => {
 
-  const [projects, setProjects] = useState([]);
+  const [activeProject, setActiveProject] = useContext(ProjectContext);
 
-  const project = localStorage.getItem('project');
+  const [projects, setProjects] = useState([]);
 
   const getProjects = async () =>{
     const res = await fetch(API + '/getProjects/' + localStorage.getItem('email'));
@@ -54,14 +55,12 @@ export const DataTable = () => {
   }, [])
 
   const activateProject = async (id, name) => {
+    await setActiveProject(name);
     localStorage.setItem('project', name)
   }
 
-  useEffect(() => {
-    console.log(project);
-  }, [project])
-
   const deactivateProject = async () =>{
+    await setActiveProject('None');
     localStorage.setItem('project', 'None')
   }
 
