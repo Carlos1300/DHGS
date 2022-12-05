@@ -16,11 +16,9 @@ jwt = JWTManager(app)
 
 CORS(app)
 
-db = mongo.db.users
-
 @app.route('/users', methods=['POST'])
 def createUser():
-    new = db.insert_one({
+    new = mongo.db.users.insert_one({
         'name': request.json['name'],
         'email': request.json['email'],
         'password': request.json['password']
@@ -31,7 +29,7 @@ def createUser():
 @app.route('/users', methods=['GET'])
 def getUsers():
     users = []
-    for doc in db.find():
+    for doc in mongo.db.users.find():
         users.append({
             '_id': str(ObjectId(doc['_id'])),
             'name': doc["name"],
@@ -42,7 +40,7 @@ def getUsers():
 
 @app.route('/users/<id>', methods=['GET'])
 def getUser(id):
-    user = db.find_one({'_id': ObjectId(id)})
+    user = mongo.db.users.find_one({'_id': ObjectId(id)})
     return jsonify({
         '_id': str(ObjectId(user['_id'])),
         'name': user["name"],
@@ -52,12 +50,12 @@ def getUser(id):
 
 @app.route('/users/<id>', methods=['DELETE'])
 def deleteUser(id):
-    db.delete_one({'_id': ObjectId(id)})
+    mongo.db.users.delete_one({'_id': ObjectId(id)})
     return jsonify({'msg': 'Deleted'})
 
 @app.route('/users/<id>', methods=['PUT'])
 def updateUser(id):
-    db.update_one({'_id': ObjectId(id)},{'$set':{
+    mongo.db.users.update_one({'_id': ObjectId(id)},{'$set':{
         'name': request.json['name'],
         'email': request.json['email'],
         'password': request.json['password']
@@ -71,7 +69,7 @@ def updateUser(id):
 def login():   
     email = request.json.get("email", None)
     
-    user_info = db.find_one({'email': email})
+    user_info = mongo.db.users.find_one({'email': email})
     
     if user_info != None:
     
@@ -97,6 +95,29 @@ def login():
             return jsonify({"msg": "Correo incorrecto"}), 401
     else:
         return jsonify({"msg": "Usuario no dado de alta"}), 401
+    
+    
+@app.route('/getProjects/<email>', methods=['GET'])
+def getProjects(email):
+    
+    projects = []
+    
+    id = 1
+    
+    
+    for doc in mongo.db.Projects.find({'user': email}):
+        projects.append({
+            'id': id,
+            '_id': str(ObjectId(doc['_id'])),
+            'ProjectName': doc["ProjectName"],
+            "DataBaseName": doc["DataBaseName"],
+            "status": "desactivado"
+        })
+        
+        
+        id += 1
+    
+    return jsonify(projects)
     
 @app.route('/method', methods=['POST'])
 def applyMethod():

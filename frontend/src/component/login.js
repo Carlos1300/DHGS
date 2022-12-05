@@ -1,5 +1,6 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import swal from 'sweetalert';
 
 
 const API = process.env.REACT_APP_API;
@@ -7,7 +8,7 @@ const API = process.env.REACT_APP_API;
 export const Login = () => {
 
     const [email, setEmail] = useState('');
-    const[password, setPassword] = useState('');
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
     const handleClick = async () =>{
@@ -26,7 +27,14 @@ export const Login = () => {
         const data = await res.json();
 
         if(res.status !== 200 && data.msg !== ''){
-            alert(data.msg);
+            swal({
+                title: 'Error al iniciar sesión',
+                text: data.msg,
+                icon: 'error',
+                button: 'Volver a intentarlo',
+                confirmButtonColor: "#000",
+                timer: "10000"
+            });
             setEmail('');
             setPassword('');
         }else{
@@ -36,6 +44,7 @@ export const Login = () => {
             localStorage.setItem('email', data.email);
             localStorage.setItem('tel', data.tel);
             localStorage.setItem('token', data.token);
+            localStorage.setItem('project', 'None')
             navigate('dashboard')
         }
     }
@@ -62,7 +71,7 @@ export const Login = () => {
                                             </div>
                                             <div className="text-center pt-1 mb-5 pb-1">
                                                 <div className="d-grip gap-2 col-6 mx-auto">
-                                                    <button className="btn btn-primary mb-3 rounded" type="button" style={{backgroundImage: "linear-gradient(90deg, rgba(0,140,106,1) 50%, rgba(2,198,159,1) 100%)"}} onClick={handleClick}>
+                                                    <button className="btn btn-primary mb-3 rounded" type="button" style={{backgroundColor: "#18615B", borderColor: "#18615B"}} onClick={handleClick}>
                                                         Ingresar
                                                     </button>
                                                 </div>

@@ -9,6 +9,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
 import LogoutIcon from '@mui/icons-material/Logout';
+import HistoryIcon from '@mui/icons-material/History';
 import { Link } from "react-router-dom";
 
 export const Sidebar = () => {
@@ -20,6 +21,7 @@ export const Sidebar = () => {
     localStorage.removeItem('email');
     localStorage.removeItem('tel');
     localStorage.removeItem('token');
+    localStorage.removeItem('project');
   }
 
   return (
@@ -63,6 +65,11 @@ export const Sidebar = () => {
             <li>
               <DownloadIcon className="icon"/>
               <span>Exportar</span>
+            </li>
+            <p className="title">ACCIONES</p>
+            <li>
+              <HistoryIcon className="icon"/>
+              <span>Historial</span>
             </li>
             <p className="title">AYUDA</p>
             <li>

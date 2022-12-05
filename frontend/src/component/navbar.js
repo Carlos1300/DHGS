@@ -1,8 +1,9 @@
 import React from "react";
 import "../general.scss";
 import SearchIcon from '@mui/icons-material/Search';
-import TranslateIcon from '@mui/icons-material/Translate';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import WorkOffIcon from '@mui/icons-material/WorkOff';
+import WorkIcon from '@mui/icons-material/Work';
 
 export const Navbar = () =>{
   return (
@@ -13,10 +14,21 @@ export const Navbar = () =>{
           <SearchIcon className="icon" />
         </div>
         <div className="items">
-          <div className="item">
-            <TranslateIcon className="icon" />
-            Español
-          </div>
+
+          {
+            localStorage.getItem('project') === 'None' ? (
+              <div className="item">
+                <WorkOffIcon className="icon" style={{color: "red"}}/>
+                &nbsp; Ningún proyecto activo
+              </div>
+            ) : (
+              <div className="item">
+                <WorkIcon className="icon" style={{color: "limegreen"}}/>
+                &nbsp; {localStorage.getItem('project')}
+              </div>
+            )
+          }
+          
           <div className="item">
             <DarkModeIcon className="icon" />
           </div>
