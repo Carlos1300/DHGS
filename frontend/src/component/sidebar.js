@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import "../general.scss"
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -11,8 +11,11 @@ import DownloadIcon from '@mui/icons-material/Download';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HistoryIcon from '@mui/icons-material/History';
 import { Link } from "react-router-dom";
+import { ProjectContext } from "../context/projectContext";
 
 export const Sidebar = () => {
+
+  const [activeProject, setActiveProject] = useContext(ProjectContext);
 
   const logout = async () => {
     localStorage.removeItem('name');
@@ -22,6 +25,7 @@ export const Sidebar = () => {
     localStorage.removeItem('tel');
     localStorage.removeItem('token');
     localStorage.removeItem('project');
+    setActiveProject('None')
   }
 
   return (
