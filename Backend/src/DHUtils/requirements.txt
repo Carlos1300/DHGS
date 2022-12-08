@@ -1,0 +1,7 @@
+pandas
+openpyxl
+argparse
+pymongo
+fsspec
+jellyfish
+

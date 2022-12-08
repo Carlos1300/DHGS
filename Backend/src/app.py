@@ -1,15 +1,20 @@
 from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo, ObjectId
+from flask_pymongo import PyMongo, ObjectId, MongoClient
 from flask_cors import CORS
+from DHUtils import dhRepository
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
 import json
 
 app = Flask(__name__)
+
 ## MONGO Connection
-app.config['MONGO_URI']='mongodb://carav:avicar13@localhost:27017/datahub'
+app.config['MONGO_URI']='mongodb://carav:avicar13@localhost:27017'
 mongo = PyMongo(app)
+MONGO_CLIENT = MongoClient('mongodb://carav:avicar13@localhost:27017')
+
+
 ## JWT
 app.config["JWT_SECRET_KEY"] = "123456789"  # Cambiar antes de desplegar
 jwt = JWTManager(app)
@@ -65,11 +70,13 @@ def updateUser(id):
 
 ############################### DATAHUB ###########################################
 
+ACTIVE_PROJECT_DB = None
+
 @app.route("/", methods=["POST"])
 def login():   
     email = request.json.get("email", None)
     
-    user_info = mongo.db.users.find_one({'email': email})
+    user_info = MONGO_CLIENT['datahub']['users'].find_one({'email': email})
     
     if user_info != None:
     
@@ -105,7 +112,7 @@ def getProjects(email):
     id = 1
     
     
-    for doc in mongo.db.Projects.find({'user': email}):
+    for doc in MONGO_CLIENT['datahub']['Projects'].find({'user': email}):
         projects.append({
             'id': id,
             '_id': str(ObjectId(doc['_id'])),
