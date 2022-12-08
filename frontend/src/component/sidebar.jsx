@@ -58,10 +58,12 @@ export const Sidebar = () => {
               </li>
             </Link>
             <p className="title">PROCESOS</p>
+            <Link to="/nuevo">
             <li>
               <FileUploadIcon className="icon"/>
               <span>Importar</span>
             </li>
+            </Link>
             <li>
               <AccountTreeIcon className="icon"/>
               <span>Flujos</span>

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo, ObjectId, MongoClient
 from flask_cors import CORS
 from DHUtils import dhRepository
+import pandas as pd
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
@@ -124,6 +125,19 @@ def getProjects(email):
         id += 1
     
     return jsonify(projects)
+
+@app.route('/addProject/<email>', methods=['POST'])
+def add_project(email):
+    add_project_request = {
+        "file": request.files['dataFile'],
+        "sep": request.form['sep'],
+        "enc": request.form['enc']
+    }
+    read_csv = pd.read_csv(add_project_request['file'])
+    print(add_project_request['sep'])
+    print(add_project_request['enc'])
+    print(read_csv.head(10))
+    return 'Uploaded'
     
 @app.route('/method', methods=['POST'])
 def applyMethod():
