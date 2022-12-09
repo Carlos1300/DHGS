@@ -1,4 +1,4 @@
-from dhRepository import InsertarDocumentoBDProyecto
+from DHUtils import dhRepository
 from datetime import datetime
 
 
@@ -11,7 +11,7 @@ def RegistrarError_BDProyecto (Entidad, idEntidad, NumeroError, valorError):
         'Value': valorError,
         'Date': datetime.now()
     }
-    InsertarDocumentoBDProyecto('Log_Errors', doc )
+    dhRepository.InsertarDocumentoBDProyecto('Log_Errors', doc )
 
 
 def registrar_ejecucion_exitosa_operacion_dataflow_prj ( DataFlow_Id, dhStepDataFlow ):
@@ -24,7 +24,7 @@ def registrar_ejecucion_exitosa_operacion_dataflow_prj ( DataFlow_Id, dhStepData
          'Date': datetime.now()
 
      }
-     InsertarDocumentoBDProyecto('Log_Errors', doc)
+     dhRepository.InsertarDocumentoBDProyecto('Log_Errors', doc)
 
 
 def registrar_ejecucion_fallida_operacion_dataflow_prj(DataFlow_Id, dhStepDataFlow):
@@ -38,5 +38,5 @@ def registrar_ejecucion_fallida_operacion_dataflow_prj(DataFlow_Id, dhStepDataFl
         'Date': datetime.now()
 
     }
-    InsertarDocumentoBDProyecto('Log_Errors', doc)
+    dhRepository.InsertarDocumentoBDProyecto('Log_Errors', doc)
 

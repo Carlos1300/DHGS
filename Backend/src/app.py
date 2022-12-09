@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo, ObjectId, MongoClient
 from flask_cors import CORS
-from DHUtils import dhRepository as dhRep
+from DHUtils import dhRepository, DatahubEx
 import pandas as pd
+from datetime import datetime
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
@@ -131,18 +132,34 @@ def add_project(email):
     add_project_request = {
         "file": request.files['dataSource'],
         "name": request.form['pName'],
-        "type": request.form['fileType'],
+        "source_type": request.form['fileType'],
         "separator": request.form['sep'],
         "encoding": request.form['enc'],
+        "file_name": request.files['dataSource'].filename
     }
     
-    new_project = MONGO_CLIENT['datahub']['Projects'].insert_one({
+    doc = dhRepository.BuscarRegistroEnBD('Projects', 'ProjectName', add_project_request['name'])
+    if doc == None:
+        new_project = MONGO_CLIENT['datahub']['Projects'].insert_one({
         "ProjectName": add_project_request['name'],
         "DataBaseName": add_project_request['name'],
         "user": email
-    })
+        })
+        msg = 'Se ha agregado con éxito la fuente de datos con el ID de objeto'
+        project_id = str(ObjectId(new_project.inserted_id))
     
-    return jsonify({'msg': 'LMAO'})
+    else:
+        msg = 'Se ha actualizado con éxito la fuente de datos con el ID de objeto'
+        project_id = str(doc['_id'])
+        
+    dhRepository.EstablecerBDProjecto(add_project_request['name'])
+    df_Fuente, reg =  DatahubEx.CargarFuente_a_Dataframe(add_project_request)
+    DatahubEx.Guardar_DataFrame_Fuente_BD(reg, df_Fuente)
+    
+    return jsonify({
+        'msg': msg,
+        'objID': project_id
+        })
     
 @app.route('/method', methods=['POST'])
 def applyMethod():

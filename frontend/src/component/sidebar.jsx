@@ -72,7 +72,7 @@ export const Sidebar = () => {
               <DownloadIcon className="icon"/>
               <span>Exportar</span>
             </li>
-            <p className="title">ACCIONES</p>
+            <p className="title">HERRAMIENTAS</p>
             <li>
               <HistoryIcon className="icon"/>
               <span>Historial</span>

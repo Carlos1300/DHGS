@@ -3,6 +3,7 @@ import "../general.scss";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import swal from 'sweetalert';
 
 const API = process.env.REACT_APP_API;
 
@@ -25,6 +26,8 @@ export const New = () =>{
         form.append('sep', sep);
         form.append('enc', enc);
 
+        console.log(URL.createObjectURL(file))
+
         const res = await fetch(API + '/addProject/' + localStorage.getItem('email'),{
             method: 'POST',
             headers:{
@@ -34,7 +37,40 @@ export const New = () =>{
         });
 
         const data = await res.json();
-        console.log(data)
+
+        if(res.status !== 200 && data.msg !== ''){
+            swal({
+                title: 'Error al cargar la fuente de datos',
+                text: 'Revisa de nuevo los campos.',
+                icon: 'error',
+                button: 'Volver a intentarlo',
+                confirmButtonColor: "#000",
+                timer: "10000"
+            });
+
+            setFile('');
+            setProjectName('');
+            setFileType('');
+            setSep('');
+            setEnc('');
+
+        }else{
+            swal({
+                title: 'Carga exitosa',
+                text: data.msg + ' : ' + data.objID,
+                icon: 'success',
+                button: 'Continuar',
+                confirmButtonColor: "#000",
+                timer: "10000"
+            })
+
+            setFile('');
+            setProjectName('');
+            setFileType('');
+            setSep('');
+            setEnc('');
+        }
+        
     }
 
     return(
