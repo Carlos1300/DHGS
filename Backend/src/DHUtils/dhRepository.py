@@ -12,17 +12,17 @@ contiene diversas funciones de búsqueda y manipulación de los valores contenid
 USUARIO = 'carav'
 PASSWORD = 'avicar13'
 SERVIDOR = 'localhost:27017'
-DefaultBD = 'datahub'
+# DefaultBD = 'datahub'
 
-local_mongo_client = MongoClient('mongodb://' + USUARIO + ':' + PASSWORD + '@' + SERVIDOR + '/' + DefaultBD)
+local_mongo_client = MongoClient('mongodb://' + USUARIO + ':' + PASSWORD + '@' + SERVIDOR)
 
-db_Datahub = local_mongo_client[DefaultBD]
+db_Datahub = local_mongo_client['datahub']
 db_Proyecto = None
 
 ## CREACIÓN DE UNA FUNCIÓN PARA CONECTARSE A MONGO?
 
 
-def BuscarRegistroEnBD(Coleccion, Llave, Valor, NombreBD=DefaultBD):
+def BuscarRegistroEnBD(Coleccion, Llave, Valor, NombreBD='datahub'):
     
     """
     Función encargada de buscar y encontrar el primer valor que se encuentre y que
@@ -105,7 +105,7 @@ def InsertarDocumentoBDProyecto(Coleccion, Documento):
     return doc
 
 
-def Buscar_BaseDatos(NombreBaseDatos, NombreBD=DefaultBD):
+def Buscar_BaseDatos(NombreBaseDatos, NombreBD='datahub'):
     
     """
     Función encargada de informar si una base de datos se encuentra en el servidor.

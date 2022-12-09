@@ -9,6 +9,33 @@ const API = process.env.REACT_APP_API;
 export const New = () =>{
 
     const [file, setFile] = useState("");
+    const [projectName, setProjectName] = useState("");
+    const [fileType, setFileType] = useState("csv");
+    const [sep, setSep] = useState("");
+    const [enc, setEnc] = useState("UTF-8");
+
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+        const form = new FormData();
+        form.append('dataSource', file);
+        form.append('pName', projectName);
+        form.append('fileType', fileType);
+        form.append('sep', sep);
+        form.append('enc', enc);
+
+        const res = await fetch(API + '/addProject/' + localStorage.getItem('email'),{
+            method: 'POST',
+            headers:{
+                "Access-Control-Allow-Origin": "*"
+            },
+            body: form
+        });
+
+        const data = await res.json();
+        console.log(data)
+    }
 
     return(
         <div className="new">
@@ -23,18 +50,18 @@ export const New = () =>{
                         <img src={file ? "https://static.thenounproject.com/png/3163111-200.png" : "https://static.thenounproject.com/png/140281-200.png"} alt="" className="placeholderImg" />
                     </div>
                     <div className="right">
-                        <form action={API + '/addProject/' + localStorage.getItem('email')} method="POST" encType="multipart/form-data">
+                        <form onSubmit={handleSubmit}>
                             <div className="formInput">
                                 <label htmlFor="file">Fuente de Datos: <DriveFolderUploadIcon className="icon" /></label>
-                                <input type="file" id="file" name="dataFile" onChange={e=>setFile(e.target.files[0])} style={{display: "none"}} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
+                                <input type="file" id="file" name="dataSource" onChange={e => setFile(e.target.files[0])} style={{display: "none"}} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
                             </div>
                             <div className="formInput">
                                 <label>Nombre de Proyecto</label>
-                                <input type="text" placeholder="Indique le nombre del proyecto" />
+                                <input type="text" name="pName" placeholder="Indique le nombre del proyecto" onChange={e => setProjectName(e.target.value)}/>
                             </div>
                             <div className="formInput">
                                 <label>Tipo de Archivo</label>
-                                <select name="fileType">
+                                <select name="fileType" onChange={e => setFileType(e.target.value)}>
                                     <option value="csv" selected>CSV</option>
                                     <option value="xlsx">XLSX</option>
                                     <option value="txt">TXT</option>
@@ -43,11 +70,11 @@ export const New = () =>{
                             </div>
                             <div className="formInput">
                                 <label>Separador</label>
-                                <input type="text" name="sep" placeholder="Indique el separador" />
+                                <input type="text" name="sep" placeholder="Indique el separador" onChange={e => setSep(e.target.value)}/>
                             </div>
                             <div className="formInput">
                                 <label>Codificación</label>
-                                <select name="enc">
+                                <select name="enc" onChange={e => setEnc(e.target.value)}>
                                     <option value="UTF-8" selected>UTF-8</option>
                                     <option value="ISO">ISO</option>
                                     <option value="LATIN">LATIN</option>

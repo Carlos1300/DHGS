@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo, ObjectId, MongoClient
 from flask_cors import CORS
-from DHUtils import dhRepository
+from DHUtils import dhRepository as dhRep
 import pandas as pd
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
@@ -71,7 +71,7 @@ def updateUser(id):
 
 ############################### DATAHUB ###########################################
 
-ACTIVE_PROJECT_DB = None
+# ACTIVE_PROJECT_DB = None
 
 @app.route("/", methods=["POST"])
 def login():   
@@ -129,15 +129,20 @@ def getProjects(email):
 @app.route('/addProject/<email>', methods=['POST'])
 def add_project(email):
     add_project_request = {
-        "file": request.files['dataFile'],
-        "sep": request.form['sep'],
-        "enc": request.form['enc']
+        "file": request.files['dataSource'],
+        "name": request.form['pName'],
+        "type": request.form['fileType'],
+        "separator": request.form['sep'],
+        "encoding": request.form['enc'],
     }
-    read_csv = pd.read_csv(add_project_request['file'])
-    print(add_project_request['sep'])
-    print(add_project_request['enc'])
-    print(read_csv.head(10))
-    return 'Uploaded'
+    
+    new_project = MONGO_CLIENT['datahub']['Projects'].insert_one({
+        "ProjectName": add_project_request['name'],
+        "DataBaseName": add_project_request['name'],
+        "user": email
+    })
+    
+    return jsonify({'msg': 'LMAO'})
     
 @app.route('/method', methods=['POST'])
 def applyMethod():
