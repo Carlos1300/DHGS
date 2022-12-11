@@ -105,7 +105,7 @@ def InsertarDocumentoBDProyecto(Coleccion, Documento):
     return doc
 
 
-def Buscar_BaseDatos(NombreBaseDatos, NombreBD='datahub'):
+def Buscar_BaseDatos(NombreBaseDatos):
     
     """
     Función encargada de informar si una base de datos se encuentra en el servidor.
@@ -221,3 +221,15 @@ def obtener_atributos_por_filtro_prj(Coleccion, filtroDict, Campos_List):
     docs = db_Proyecto[Coleccion].find(filtroDict , campos_dict)
 
     return docs
+
+######################### DATAHUB BACKEND REST API ###################################
+
+def create_database(client, project):
+        new_db = client[project]
+        new_db['DataFlows'].insert_one({"test": 'test'})
+        new_db['DataCleaned'].insert_one({"test": 'test'})
+
+        new_db['DataFlows'].delete_one({"test": 'test'})
+        new_db['DataCleaned'].delete_one({"test": 'test'})
+        
+        return True

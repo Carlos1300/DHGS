@@ -114,18 +114,20 @@ def getProjects(email):
     id = 1
     
     
-    for doc in MONGO_CLIENT['datahub']['Projects'].find({'user': email}):
+    for doc in MONGO_CLIENT['datahub']['Projects'].find({'User': email}):
         projects.append({
             'id': id,
             '_id': str(ObjectId(doc['_id'])),
             'ProjectName': doc["ProjectName"],
-            "DataBaseName": doc["DataBaseName"]
+            "DataBaseName": doc["DataBaseName"],
+            "DateCreated": doc["DateCreated"]
         })
         
         
         id += 1
     
     return jsonify(projects)
+
 
 @app.route('/addProject/<email>', methods=['POST'])
 def add_project(email):
@@ -138,13 +140,19 @@ def add_project(email):
         "file_name": request.files['dataSource'].filename
     }
     
+    if not add_project_request['name'] in MONGO_CLIENT.list_database_names():
+        dhRepository.create_database(MONGO_CLIENT, add_project_request['name'])
+        print('Se ha creado la base de datos')
+    
     doc = dhRepository.BuscarRegistroEnBD('Projects', 'ProjectName', add_project_request['name'])
     if doc == None:
         new_project = MONGO_CLIENT['datahub']['Projects'].insert_one({
         "ProjectName": add_project_request['name'],
         "DataBaseName": add_project_request['name'],
-        "user": email
+        "User": email,
+        "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year) + ' - ' + str(datetime.now().hour) + ':' + str(datetime.now().minute)
         })
+        
         msg = 'Se ha agregado con éxito la fuente de datos con el ID de objeto'
         project_id = str(ObjectId(new_project.inserted_id))
     

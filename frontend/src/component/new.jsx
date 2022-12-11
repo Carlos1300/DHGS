@@ -41,7 +41,7 @@ export const New = () =>{
         if(res.status !== 200 && data.msg !== ''){
             swal({
                 title: 'Error al cargar la fuente de datos',
-                text: 'Revisa de nuevo los campos.',
+                text: 'Revise de nuevo los campos.',
                 icon: 'error',
                 button: 'Volver a intentarlo',
                 confirmButtonColor: "#000",
@@ -93,7 +93,7 @@ export const New = () =>{
                             </div>
                             <div className="formInput">
                                 <label>Nombre de Proyecto</label>
-                                <input type="text" name="pName" placeholder="Indique le nombre del proyecto" onChange={e => setProjectName(e.target.value)}/>
+                                <input type="text" name="pName" value={projectName} placeholder="Indique le nombre del proyecto" onChange={e => setProjectName(e.target.value)}/>
                             </div>
                             <div className="formInput">
                                 <label>Tipo de Archivo</label>
@@ -106,7 +106,7 @@ export const New = () =>{
                             </div>
                             <div className="formInput">
                                 <label>Separador</label>
-                                <input type="text" name="sep" placeholder="Indique el separador" onChange={e => setSep(e.target.value)}/>
+                                <input type="text" name="sep" value={sep} placeholder="Indique el separador" onChange={e => setSep(e.target.value)}/>
                             </div>
                             <div className="formInput">
                                 <label>Codificación</label>

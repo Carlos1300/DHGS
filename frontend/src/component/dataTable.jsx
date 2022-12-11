@@ -8,7 +8,8 @@ const columns = [
   { field: '_id', hide: true},
   { field: 'id', headerName: "ID" },
   { field: 'ProjectName', headerName: "Nombre de Proyecto", width: 330},
-  { field: "DataBaseName", headerName: "Base de Datos", width: 230 }
+  { field: "DataBaseName", headerName: "Base de Datos", width: 230 },
+  { field: "DateCreated", headerName: "Fecha y Hora de Creación", width: 330 }
   // { field: "status", headerName: "Estado", width: 160,
   // renderCell: (params) =>{
   //   return(
