@@ -8,6 +8,8 @@ import { Login } from './component/login';
 import { List } from "./component/list";
 import { Single } from "./component/single";
 import { New } from "./component/new";
+import { ListPerf } from "./component/listPerf";
+import { ListLoads } from "./component/listLoads";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
               <Route index element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/repo" element={<List />}/>
+              <Route path="/dataperf" element={<ListPerf />}/>
+              <Route path="/dataloads" element={<ListLoads />}/>
               <Route path="/cuenta" element={<Single />}/>
               <Route path="/nuevo" element={<New />}/>
           </Routes>

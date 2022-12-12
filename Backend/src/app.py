@@ -168,7 +168,55 @@ def add_project(email):
         'msg': msg,
         'objID': project_id
         })
+
+@app.route('/getDataPerf/<email>/<project>', methods=['GET'])
+def getDataPerfs(email, project):
+    data_perfs= MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Resume'})
     
+    resume_cols = [data_perfs['schema']['fields'][x]['name'] for x in range(len(data_perfs['schema']['fields']))]
+    resume_cols.remove('index')
+    
+    data_resume = []
+    temp_dict = {}
+    
+    id = 1
+    
+    for col in resume_cols:
+        temp_dict.update({'Column': col})
+        temp_dict.update({'id': id})
+        for i in range(len(data_perfs['data'])):
+            temp_dict.update({str(data_perfs['data'][i]['index']) : data_perfs['data'][i][col]})
+        dict_data = temp_dict.copy()
+        data_resume.append(dict_data)
+        id += 1
+    
+    return jsonify(data_resume)
+
+@app.route('/getDataLoads/<email>/<project>', methods=['GET'])
+def getDataLoads(email, project):
+    
+    loads = []
+    
+    id = 1
+    
+    
+    for doc in MONGO_CLIENT[project]['DataSource_Loads'].find():
+        loads.append({
+            'id': id,
+            '_id': str(ObjectId(doc['_id'])),
+            'FileName': doc["FileName"],
+            "SourceType": doc["SourceType"].upper(),
+            "Status": doc["Status"],
+            "Encoding": doc["Encoding"],
+            "Rows": doc["CountRows"],
+            "Columns": doc["CountColumns"]
+        })
+        
+        
+        id += 1
+    
+    return jsonify(loads)
+
 @app.route('/method', methods=['POST'])
 def applyMethod():
     

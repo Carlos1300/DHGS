@@ -117,7 +117,18 @@ export const New = () =>{
                                     <option value="OTRO">OTRO</option>
                                 </select>
                             </div>
-                            <div className="formInput"></div>
+                            {
+                                fileType === 'xlsx' ? (
+
+                                    <div className="formInput">
+                                        <label>Hoja</label>
+                                        <input type="text" name="sep" value={sep} placeholder="Indique el nombre de la hoja a cargar" onChange={e => setSep(e.target.value)}/>
+                                    </div>
+                                ) : (
+                                    <div className="formInput"></div>
+                                )
+
+                            }
                             <button className="sendButton">Send</button>
                         </form>
                     </div>

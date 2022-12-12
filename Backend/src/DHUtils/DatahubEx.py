@@ -126,6 +126,7 @@ def CargarFuente_a_Dataframe (argumentos):
 
 def Guardar_DataFrame_Fuente_BD(RegistroCarga, dtfr:pd.DataFrame):
     doc =  json.loads(dtfr.to_json(orient='table'))
+    pd.set_option('display.float_format', lambda x: '%.2f' % x)
     doc_perf = json.loads(dtfr.describe().to_json(orient='table'))
     doc['_id'] = RegistroCarga['_id']
     doc_perf['_id'] = RegistroCarga['_id']

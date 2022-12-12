@@ -5,6 +5,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { Link } from "react-router-dom";
 
 export const Widget = ({ type }) =>{
 
@@ -16,10 +17,11 @@ export const Widget = ({ type }) =>{
     switch(type){
         case "users":
             data={
-                title: "USERS",
+                title: "PROYECTOS",
                 isMoney: false,
-                link: "See all users",
-                icon: <PersonIcon className="icon" />
+                link: "Mi Repositorio",
+                icon: <PersonIcon className="icon" />,
+                linkTo: '/repo'
             };
             break;
         case "order":
@@ -27,7 +29,8 @@ export const Widget = ({ type }) =>{
                 title: "ORDERS",
                 isMoney: false,
                 link: "View all orders",
-                icon: <ShoppingCartIcon className="icon" />
+                icon: <ShoppingCartIcon className="icon" />,
+                linkTo: '/repo'
             };
             break;
         case "earnings":
@@ -35,7 +38,8 @@ export const Widget = ({ type }) =>{
                 title: "EARNINGS",
                 isMoney: true,
                 link: "View net earnings",
-                icon: <MonetizationOnIcon className="icon" />
+                icon: <MonetizationOnIcon className="icon" />,
+                linkTo: '/repo'
             };
             break;
         case "balance":
@@ -43,7 +47,8 @@ export const Widget = ({ type }) =>{
                 title: "BALANCE",
                 isMoney: true,
                 link: "See details",
-                icon: <AccountBalanceWalletIcon className="icon" />
+                icon: <AccountBalanceWalletIcon className="icon" />,
+                linkTo: '/repo'
             };
             break;
         default:
@@ -55,7 +60,7 @@ export const Widget = ({ type }) =>{
             <div className="left">
                 <span className="title">{data.title}</span>
                 <span className="counter">{data.isMoney && "$"} {amount}</span>
-                <span className="link">{data.link}</span>
+                <span className="link"><Link to={data.linkTo}>{data.link}</Link></span>
             </div>
             <div className="right">
                 <div className="percentage positive">

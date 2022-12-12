@@ -12,6 +12,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import HistoryIcon from '@mui/icons-material/History';
 import { Link } from "react-router-dom";
 import { ProjectContext } from "../context/projectContext";
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import DatasetIcon from '@mui/icons-material/Dataset';
 
 export const Sidebar = () => {
 
@@ -72,11 +74,30 @@ export const Sidebar = () => {
               <DownloadIcon className="icon"/>
               <span>Exportar</span>
             </li>
-            <p className="title">HERRAMIENTAS</p>
-            <li>
-              <HistoryIcon className="icon"/>
-              <span>Historial</span>
-            </li>
+              {
+                activeProject !== 'None' ? (
+                  <div>
+                    <p className="title">HERRAMIENTAS DE PROYECTO</p>
+                    <Link to= '/dataperf'>
+                      <li>
+                        <DatasetIcon className="icon"/>
+                        <span>Datos Perfilados</span>
+                      </li>
+                    </Link>
+                    <li>
+                      <CleaningServicesIcon className="icon"/>
+                      <span>Datos Procesados</span>
+                    </li>
+                    <Link to= '/dataloads'>
+                      <li>
+                        <HistoryIcon className="icon"/>
+                        <span>Cargas de Datos</span>
+                      </li>
+                    </Link>
+                  </div>
+                ) : (<div></div>)
+                
+              }
             <p className="title">AYUDA</p>
             <li>
               <HelpIcon className="icon"/>
