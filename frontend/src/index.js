@@ -5,12 +5,15 @@ import App from './App';
 import { ProjectContextProvider } from './context/projectContext';
 
 import 'bootswatch/dist/pulse/bootstrap.min.css'
+import { AuthContextProvider } from './context/AuthContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ProjectContextProvider>
-      <App />
-    </ProjectContextProvider>
+    <AuthContextProvider>
+      <ProjectContextProvider>
+        <App />
+      </ProjectContextProvider>
+    </AuthContextProvider>
   </React.StrictMode>
 );

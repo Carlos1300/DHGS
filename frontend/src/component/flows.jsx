@@ -6,7 +6,7 @@ import { ProjectContext } from "../context/projectContext";
 
 const API = process.env.REACT_APP_API;
 
-export const DataTable = () => {
+export const Flows = () => {
 
   const [activeProject, setActiveProject] = useContext(ProjectContext);
 
@@ -53,8 +53,8 @@ export const DataTable = () => {
   return(
       <div className="datatable">
         <div className="manageTable">
-          <h1 className="title">Mis Proyectos</h1>
-          <Link to="/nuevo"><div className="addButton">Agregar Datos</div></Link>
+          <h1 className="title">Mis Flujos</h1>
+          <Link to="/nuevoflujo"><div className="addButton">Agregar Datos</div></Link>
         </div>
           <DataGrid
           rows={projects}

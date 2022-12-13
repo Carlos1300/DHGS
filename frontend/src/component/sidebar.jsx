@@ -10,24 +10,33 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HistoryIcon from '@mui/icons-material/History';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ProjectContext } from "../context/projectContext";
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import DatasetIcon from '@mui/icons-material/Dataset';
+import { AuthContext } from "../context/AuthContext";
 
 export const Sidebar = () => {
 
+  const {dispatch} = useContext(AuthContext);
+
   const [activeProject, setActiveProject] = useContext(ProjectContext);
 
-  const logout = async () => {
+  const navigate = useNavigate();
+
+  const logout = () => {
+
+    dispatch({type: "LOGOUT"});
     localStorage.removeItem('name');
     localStorage.removeItem('address');
     localStorage.removeItem('country');
-    localStorage.removeItem('email');
     localStorage.removeItem('tel');
     localStorage.removeItem('token');
     localStorage.removeItem('project');
-    setActiveProject('None')
+    localStorage.removeItem('projObjID');
+    setActiveProject('None');
+    navigate('/');
+
   }
 
   return (
@@ -66,10 +75,12 @@ export const Sidebar = () => {
               <span>Importar</span>
             </li>
             </Link>
-            <li>
-              <AccountTreeIcon className="icon"/>
-              <span>Flujos</span>
-            </li>
+            <Link to='/flows'>
+              <li>
+                <AccountTreeIcon className="icon"/>
+                <span>Flujos</span>
+              </li>
+            </Link>
             <li>
               <DownloadIcon className="icon"/>
               <span>Exportar</span>
@@ -108,12 +119,10 @@ export const Sidebar = () => {
               <span>Contáctanos</span>
             </li>
             <p className="title">CERRAR SESIÓN</p>
-            <Link to="/">
               <li onClick={logout}>
                 <LogoutIcon className="icon"/>
                 <span>Salir</span>
               </li>
-            </Link>
           </ul>
         </div>
     </div>

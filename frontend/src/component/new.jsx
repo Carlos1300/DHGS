@@ -93,7 +93,7 @@ export const New = () =>{
                             </div>
                             <div className="formInput">
                                 <label>Nombre de Proyecto</label>
-                                <input type="text" name="pName" value={projectName} placeholder="Indique le nombre del proyecto" onChange={e => setProjectName(e.target.value)}/>
+                                <input type="text" name="pName" value={projectName} placeholder="Indique el nombre del proyecto" onChange={e => setProjectName(e.target.value)}/>
                             </div>
                             <div className="formInput">
                                 <label>Tipo de Archivo</label>

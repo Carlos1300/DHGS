@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import swal from 'sweetalert';
+import { AuthContext } from "../context/AuthContext";
 
 
 const API = process.env.REACT_APP_API;
@@ -10,6 +11,8 @@ export const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+
+    const {dispatch} = useContext(AuthContext);
 
     const handleClick = async () =>{
         const res = await fetch(API + '/',
@@ -38,10 +41,10 @@ export const Login = () => {
             setEmail('');
             setPassword('');
         }else{
+            dispatch({type: "LOGIN", payload: data.email});
             localStorage.setItem('name', data.name);
             localStorage.setItem('address', data.address);
             localStorage.setItem('country', data.country);
-            localStorage.setItem('email', data.email);
             localStorage.setItem('tel', data.tel);
             localStorage.setItem('token', data.token);
             navigate('dashboard')

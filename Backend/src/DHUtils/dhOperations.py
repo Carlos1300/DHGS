@@ -45,17 +45,6 @@ def save_source_main (datasources, mainParams, stepdict = None ):
     dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
     return True, datasources['_main_ds']
 
-# ################################################### FUNCIÓN CREADA POR MI ###################################################
-
-# def saveFinalData(datasources, mainParams, stepdict = None):
-#     data = json.loads(datasources['_main_ds'].to_json(orient='table'))
-#     dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], data)
-#     log.registrar_ejecucion_exitosa_operacion_dataflow_prj(mainParams['flow_id'], stepdict)
-#     return True, datasources['_main_ds']
-
-
-# ################################################### FUNCIÓN CREADA POR MI ###################################################
-
 def apply_synonymous(datasources, mainParams, stepdict = None):
     #operacion para aplicar sustitución por sinónimos a una columna origen y coloca el resultado en la columna destino
     dtFrDatos = datasources['_main_ds']
