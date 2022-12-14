@@ -554,6 +554,42 @@
             margin: 20px;
             display: flex;
 
+            &.flow{
+                flex-wrap: wrap;
+
+                .col{
+                    flex: 33.33%;
+
+                    .ruletitle{
+                        font-size: 14px;
+                        font-weight: 800;
+                    }
+
+                    .ruledesc{
+                        font-size: 12px;
+                        color: gray;
+                    }
+                }
+
+                .changebuttons{
+                    display: flex;
+                    align-items: center;
+                    gap: 1120px;
+
+                    button{
+                        padding: 5px;
+                        color: white;
+                        background-color: #18615B;
+                        border: none;
+
+                        &:disabled{
+                            background-color: lightgray;
+                            color: black;
+                        }
+                    }
+                }
+            }
+
             .title{
                 color: rgb(137, 137, 137);
                 font-size: 20px;

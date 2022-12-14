@@ -4,6 +4,7 @@ from datetime import datetime
 from DHUtils import dhUtilities
 from DHUtils import dhLogs
 import json
+import pandas as pd
 
 Proyecto = ''
 
