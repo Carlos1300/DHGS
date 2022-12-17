@@ -1,157 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../general.scss";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
-// import swal from 'sweetalert';
+import swal from 'sweetalert';
+import { useNavigate } from "react-router-dom";
 
 const API = process.env.REACT_APP_API;
 
 export const NewFlow = () =>{
 
-    const [rulesList, setRulesList] = useState(['load_source_main']);
-    const [paramsList, setParamsList] = useState({});
+    const [rulesList, setRulesList] = useState([]);
+    const [paramsList, setParamsList] = useState([]);
     const [page, setPage] = useState(0);
+    const [availableRules, setAvailableRules] = useState([]);
+    const navigate = useNavigate();
 
-    // const handleSubmit = async (e) => {
-
-    //     e.preventDefault();
-
-    //     const form = new FormData();
-    //     form.append('dataSource', file);
-    //     form.append('pName', projectName);
-    //     form.append('fileType', fileType);
-    //     form.append('sep', sep);
-    //     form.append('enc', enc);
-
-    //     console.log(URL.createObjectURL(file))
-
-    //     const res = await fetch(API + '/addProject/' + localStorage.getItem('email'),{
-    //         method: 'POST',
-    //         headers:{
-    //             "Access-Control-Allow-Origin": "*"
-    //         },
-    //         body: form
-    //     });
-
-    //     const data = await res.json();
-
-    //     if(res.status !== 200 && data.msg !== ''){
-    //         swal({
-    //             title: 'Error al cargar la fuente de datos',
-    //             text: 'Revise de nuevo los campos.',
-    //             icon: 'error',
-    //             button: 'Volver a intentarlo',
-    //             confirmButtonColor: "#000",
-    //             timer: "10000"
-    //         });
-
-    //         setFile('');
-    //         setProjectName('');
-    //         setFileType('');
-    //         setSep('');
-    //         setEnc('');
-
-    //     }else{
-    //         swal({
-    //             title: 'Carga exitosa',
-    //             text: data.msg + ' : ' + data.objID,
-    //             icon: 'success',
-    //             button: 'Continuar',
-    //             confirmButtonColor: "#000",
-    //             timer: "10000"
-    //         })
-
-    //         setFile('');
-    //         setProjectName('');
-    //         setFileType('');
-    //         setSep('');
-    //         setEnc('');
-    //     }
-        
-    // }
-
-    const availableRules = [
-        {
-            id: 1,
-            name: "Guardar cambios",
-            value: "save_source_main",
-            desc: "Guarda los cambios realizados al proyecto.",
-            params: [
-                {
-                    name: 'param1',
-                    type: 'file'
-                },
-                {
-                    name: 'param2',
-                    type: 'text'
-                },
-                {
-                    name: 'param3',
-                    type: 'text'
-                },
-
-            ]
-        },
-        {
-            id: 2,
-            name: "Aplicar sinónimo",
-            value: "apply_synonymous",
-            desc: "Aplica una sustitución de sinónimos a la columna.",
-            params: [
-                {
-                    name: 'param4',
-                    type: 'file'
-                },
-                {
-                    name: 'param5',
-                    type: 'text'
-                },
-                {
-                    name: 'param6',
-                    type: 'text'
-                },
-
-            ]
-        },
-        {
-            id: 3,
-            name: "Validar existencia en catálogo",
-            value: "validate_exist_in_catalog",
-            desc: "Comprobar si el registro existe en un catálogo.",
-            params: [
-                {
-                    name: 'param7',
-                    type: 'file'
-                },
-                {
-                    name: 'param8',
-                    type: 'text'
-                },
-                {
-                    name: 'param9',
-                    type: 'text'
-                },
-
-            ]
-        },
-        {
-            id: 4,
-            name: "Validar fonético",
-            value: "validar_fonetico",
-            desc: "Aplicar el algoritmo soundex en la columna deseada.",
-            params: [
-                {
-                    name: 'param10',
-                    type: 'file'
-                },
-                {
-                    name: 'param11',
-                    type: 'text'
-                },
-
-            ]
-        },
-    ];
+    const getProjects = async () =>{
+        const res = await fetch(API + '/getRules');
+        const data = await res.json();
+        setAvailableRules(data);
+      }
+    
+      useEffect(() => {
+        getProjects();
+      }, [])
 
     const extractParams = () => {
 
@@ -162,8 +34,6 @@ export const NewFlow = () =>{
                 extractedParams.push(availableRules[i].params)
             }
         }
-
-        // console.log(extractedParams)
 
         return extractedParams;
     }
@@ -205,7 +75,77 @@ export const NewFlow = () =>{
         }
     }
 
-    console.log(paramsList)
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+        const JSONdata = [];
+
+        let JSONelement = {};
+
+        let order = 0;
+
+        if(rulesList.length !== 0 && paramsList.length !== 0){ 
+            for (const rule of availableRules.map(a => a)){
+                if (rulesList.includes(rule.value)){
+                    JSONelement.name = rule.value
+                    JSONelement.order = order;
+                    order++;
+                    for(const param of rule.params.map(a => a.name)){
+                        JSONelement[param] = paramsList[param];
+                    }
+
+                    JSONdata.push({...JSONelement})
+                }
+
+                for (const prop of Object.getOwnPropertyNames(JSONelement)) {
+                    delete JSONelement[prop];
+                }
+            }
+        }
+
+        console.log(JSONdata)
+            
+        const res = await fetch(API + '/addFlow/' + localStorage.getItem('email'),{
+            method: 'POST',
+            headers:{
+                "Access-Control-Allow-Origin": "*",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(JSONdata),
+        });
+
+        const data = await res.json();
+
+        if(res.status !== 200 && data.msg !== ''){
+            swal({
+                title: 'Error al cargar la fuente de datos',
+                text: 'Revise de nuevo los campos.',
+                icon: 'error',
+                button: 'Volver a intentarlo',
+                confirmButtonColor: "#000",
+                timer: "10000"
+            });
+
+            setRulesList([]);
+            setParamsList([]);
+
+        }else{
+            swal({
+                title: 'Carga exitosa',
+                text: data.msg,
+                icon: 'success',
+                button: 'Continuar',
+                confirmButtonColor: "#000",
+                timer: "10000"
+            })
+
+            navigate('/flows')
+            setRulesList([]);
+            setParamsList([]);
+        }
+        
+    }
 
     const titles = ['Agregar Reglas', 'Agregar Parámetros']
 
@@ -221,10 +161,6 @@ export const NewFlow = () =>{
                     page === 0 ? (
 
                         <div className="bottom flow">
-                            <div className="col">
-                                <input type="checkbox" value={'load_source_main'} checked disabled /> <span className="ruletitle">Cargar proyecto</span>
-                                <p className="ruledesc">Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga, odit!</p>
-                            </div>
 
                             {
                                 availableRules.map((item, index) => (
@@ -235,32 +171,36 @@ export const NewFlow = () =>{
                                 ))
                             }
 
-                            <div className="col">
-                                <input type="checkbox" value={'save_source_main'} checked disabled /> <span className="ruletitle">Guardar cambios</span>
-                                <p className="ruledesc">Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga, odit!</p>
-                            </div>
                             <div className="changebuttons">
                                 <button disabled={page === 0}>Anterior</button>
-                                <button onClick={() => {setPage((page) => page + 1)}}>Siguiente</button>
+                                <button onClick={() => {setPage((page) => page + 1); extractParams()}}>Siguiente</button>
                             </div>
                         </div>
                     ) : (
                             <div className="bottom flow">
 
                                 {
-                                    extractedParams.map(item => (
-                                        item.map((param, index) => (
-                                            <div className="col" key={index}>
-                                                <p>{param.name}</p>
-                                                <input onChange={handleParamChange} name={param.name} type={param.type} />
-                                            </div>
+                                    extractedParams.length !== 0 ? (
+
+                                        extractedParams.map(item => (
+                                            item.map((param, index) => (
+                                                <div className="col" key={index}>
+                                                    <p className="displayName">{param.display_name}</p>
+                                                    <input className="parambox" placeholder={param.desc} onChange={handleParamChange} name={param.name} type={param.type} required/>
+                                                </div>
+                                            ))
                                         ))
-                                    ))
+                                    ) : (
+                                        <div className="col warn" style={{justifyContent: "center"}}>
+                                            <p className="warning">¡Ninguna regla seleccionada!</p>
+                                        </div>
+                                    )
+
                                 }
 
                                 <div className="changebuttons">
-                                    <button onClick={() => {setPage((page) => page - 1)}}>Anterior</button>
-                                    <button disabled={page === titles.length - 1} onClick={() => {setPage((page) => page + 1)}}>Siguiente</button>
+                                    <button onClick={() => {setPage((page) => page - 1); setParamsList([]);}}>Anterior</button>
+                                    <button disabled={extractedParams.length === 0} onClick={handleSubmit}>Añadir</button>
                                 </div>
                             </div>
                     )

@@ -107,7 +107,7 @@ def login():
     
     
 @app.route('/getProjects/<email>', methods=['GET'])
-def getProjects(email):
+def get_projects(email):
     
     projects = []
     
@@ -170,7 +170,7 @@ def add_project(email):
         })
 
 @app.route('/getDataPerf/<email>/<project>', methods=['GET'])
-def getDataPerfs(email, project):
+def get_data_perfs(email, project):
     data_perfs= MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Resume'})
     
     resume_cols = [data_perfs['schema']['fields'][x]['name'] for x in range(len(data_perfs['schema']['fields']))]
@@ -193,7 +193,7 @@ def getDataPerfs(email, project):
     return jsonify(data_resume)
 
 @app.route('/getDataLoads/<email>/<project>', methods=['GET'])
-def getDataLoads(email, project):
+def get_data_loads(email, project):
     
     loads = []
     
@@ -217,18 +217,43 @@ def getDataLoads(email, project):
     
     return jsonify(loads)
 
-@app.route('/method', methods=['POST'])
-def applyMethod():
+####################################### DATA FLOW IMPLEMENTATION ###################################################
+
+@app.route('/getRules', methods=['GET'])
+def get_rules():
     
-    p = []
+    rules = []
     
-    methods = request.json.get('methods', None)
-    for method in methods:
-        print("The Method is: %s" % (method))
-        for param in methods[method]['params']:
-            p.append(methods[method]['params'][param])
-        print(p)
-    return jsonify(methods)
+    id = 1
+    
+    
+    for doc in MONGO_CLIENT['datahub']['Rules'].find():
+        rules.append({
+            'id': id,
+            'name': doc["name"],
+            "value": doc["value"],
+            "desc": doc["description"],
+            "params": doc["params"]
+        })
+        
+        
+        id += 1
+    
+    return jsonify(rules)
+
+@app.route('/addFlow/<email>', methods=['POST'])
+def add_flow(email):
+    
+    operations = request.get_json()
+    
+    new_flow = MONGO_CLIENT['datahub']['GeneralFlows'].insert_one({
+        "Name": "PruebaBack",
+        "operations": operations,
+        "User": email
+    })
+    
+    return jsonify({"msg": "Jaló el back: " + str(ObjectId(new_flow.inserted_id))})
+    
  
 
 if __name__ == "__main__":
