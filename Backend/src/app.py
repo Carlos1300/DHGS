@@ -137,7 +137,8 @@ def add_project(email):
         "source_type": request.form['fileType'],
         "separator": request.form['sep'],
         "encoding": request.form['enc'],
-        "file_name": request.files['dataSource'].filename
+        "file_name": request.files['dataSource'].filename,
+        "sheet_name": request.form['sheet']
     }
     
     if not add_project_request['name'] in MONGO_CLIENT.list_database_names():

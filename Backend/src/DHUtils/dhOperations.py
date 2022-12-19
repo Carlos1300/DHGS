@@ -247,8 +247,6 @@ def validar_fonetico(datasources, mainParams, stepdict = None):
     result["metaphone dist%"] = (result["freq metaphone"] / len(df_main.index))*100
     result = result.drop_duplicates()
     
-
-    
     doc = json.loads(result.to_json(orient='table'))
     doc['name'] = "Foneticos - " + origen
     dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)

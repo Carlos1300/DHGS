@@ -37,10 +37,11 @@ def RegistrarInicioCargaDeArchivo(argumentos):
         }
 
         if argumentos['source_type'] == 'xlsx':
-            doc['SheetName']: argumentos['sheet_name']
-        elif argumentos['source_type'] == 'csv':
-            doc['Encoding'] = argumentos['encoding'] if argumentos['encoding'] else 'UTF-8'
-            doc['Separator'] = argumentos['separator'] if argumentos['separator'] else ','
+            doc['SheetName'] = argumentos['sheet_name']
+        
+        
+        doc['Encoding'] = argumentos['encoding'] if argumentos['encoding'] else 'UTF-8'
+        doc['Separator'] = argumentos['separator'] if argumentos['separator'] else ','
 
 
         dhRep.InsertarDocumentoBDProyecto('DataSource_Loads', doc)
@@ -59,7 +60,6 @@ def LeerHojaExcel_a_DataFrame (docLogCarga, doc_file):
     :param docLogCarga: Diccionario que debe contener las llaves '_id', 'Filename', 'SheetName', y 'Status'
     :return: devuelve el dataframe cargado y el código de error (cero si la carga ocurre correctamente)
     """
-
     Archivo = docLogCarga['FileName']
     Hoja = docLogCarga['SheetName']
     IdCarga = docLogCarga['_id']
@@ -71,10 +71,10 @@ def LeerHojaExcel_a_DataFrame (docLogCarga, doc_file):
     #     return None, ErrNumber
 
     ### Se verifica que exista la hoja
-    ErrNumber = dhUtilities.VerificarExisteHojaXlxs( Archivo, Hoja )
-    if ErrNumber > 0:
-        dhLogs.RegistrarError_BDProyecto('DataSource_Loads', IdCarga, ErrNumber, Archivo )
-        return None, ErrNumber
+    # ErrNumber = dhUtilities.VerificarExisteHojaXlxs( Archivo, Hoja )
+    # if ErrNumber > 0:
+    #     dhLogs.RegistrarError_BDProyecto('DataSource_Loads', IdCarga, ErrNumber, Archivo )
+    #     return None, ErrNumber
 
     ### Se carga la hoja a memoria en un DataFrame
     df_Source = pd.read_excel(doc_file, Hoja)

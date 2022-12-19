@@ -14,6 +14,7 @@ export const New = () =>{
     const [fileType, setFileType] = useState("csv");
     const [sep, setSep] = useState("");
     const [enc, setEnc] = useState("UTF-8");
+    const [sheet, setSheet] = useState("");
 
     const handleSubmit = async (e) => {
 
@@ -25,8 +26,7 @@ export const New = () =>{
         form.append('fileType', fileType);
         form.append('sep', sep);
         form.append('enc', enc);
-
-        console.log(URL.createObjectURL(file))
+        form.append('sheet', sheet);
 
         const res = await fetch(API + '/addProject/' + localStorage.getItem('email'),{
             method: 'POST',
@@ -122,7 +122,7 @@ export const New = () =>{
 
                                     <div className="formInput">
                                         <label>Hoja</label>
-                                        <input type="text" name="sep" value={sep} placeholder="Indique el nombre de la hoja a cargar" onChange={e => setSep(e.target.value)}/>
+                                        <input type="text" name="sheet" value={sheet} placeholder="Indique el nombre de la hoja a cargar" onChange={e => setSheet(e.target.value)}/>
                                     </div>
                                 ) : (
                                     <div className="formInput"></div>
