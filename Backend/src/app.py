@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo, ObjectId, MongoClient
 from flask_cors import CORS
-from DHUtils import dhRepository, DatahubEx
+from DHUtils import dhRepository, DatahubEx, dhOperations, dhLogs
 import pandas as pd
 from datetime import datetime
 
@@ -150,7 +150,7 @@ def add_project(email):
         "ProjectName": add_project_request['name'],
         "DataBaseName": add_project_request['name'],
         "User": email,
-        "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year) + ' - ' + str(datetime.now().hour) + ':' + str(datetime.now().minute)
+        "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year)
         })
         
         msg = 'Se ha agregado con éxito la fuente de datos con el ID de objeto'
@@ -245,15 +245,131 @@ def get_rules():
 def add_flow(email):
     
     operations = request.get_json()
+    print(operations)
     
     new_flow = MONGO_CLIENT['datahub']['GeneralFlows'].insert_one({
         "Name": "PruebaBack",
-        "operations": operations,
-        "User": email
+        "Operations": operations,
+        "User": email,
+        "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year)
     })
     
     return jsonify({"msg": "Jaló el back: " + str(ObjectId(new_flow.inserted_id))})
+
+@app.route('/getGeneralFlows/<email>', methods=['GET'])
+def get_gen_flows(email):
     
+    flows = []
+    
+    id = 1
+    
+    
+    for doc in MONGO_CLIENT['datahub']['GeneralFlows'].find({'User': email}):
+        flows.append({
+            'id': id,
+            '_id': str(ObjectId(doc['_id'])),
+            "FlowName": doc["Name"],
+            "Operations": len(doc["Operations"]),
+            "Sequence": doc["Operations"],
+            "DateCreated": doc["DateCreated"]
+        })
+        
+        
+        id += 1
+    
+    return jsonify(flows)
+
+@app.route('/getProjectFlows/<project>', methods=['GET'])
+def get_project_flows(project):
+    
+    project_flows = []
+    
+    id = 1
+    
+    
+    for doc in MONGO_CLIENT[project]['DataFlows'].find():
+        project_flows.append({
+            'id': id,
+            '_id': str(ObjectId(doc['_id'])),
+            "FlowName": doc["Name"],
+            "Operations": len(doc["Operations"]),
+            "Sequence": doc["Operations"],
+            "DateCreated": doc["DateCreated"]
+        })
+        
+        
+        id += 1
+    
+    return jsonify(project_flows)
+
+@app.route('/importFlow/<email>/<project>', methods=['POST'])
+def import_flow(email, project):
+    flow_id = request.get_json()
+    
+    flow = MONGO_CLIENT['datahub']['GeneralFlows'].find_one({'_id': ObjectId(flow_id), 'User': email})
+    
+    MONGO_CLIENT[project]['DataFlows'].insert_one(flow)
+    
+    return jsonify({'msg': str(flow)})
+
+@app.route('/applyFlow/<project>', methods=['POST'])
+def apply_flow(project):
+    flow_id = request.get_json()
+    
+    source_id = MONGO_CLIENT[project]['DataLoads'].find_one()['_id']
+    
+    args = {
+        'project_name': project,
+        'flow_id': flow_id,
+        'source_id': source_id
+    }
+    
+    # Se verifica que se haya especificado un proyecto válido
+    bdProyecto = dhRepository.EstablecerBDProjecto(project)
+    if bdProyecto is None:
+        return jsonify({"msg": "No se encontró el nombre del proyecto " + project + " en el DataHub."}), 401
+    else:
+        print('Estableciendo BD Proyecto ...OK')
+
+    # se verifica que exista el flujo especificado
+    dataflow = dhRepository.BuscarDocumentoporId_Proyecto('DataFlows', flow_id)
+    if dataflow is None:
+        return jsonify({"msg": "No se encontró el flujo con id: " + flow_id + " en el DataHub."}), 401
+    else:
+        print('Flujo a ejecutar: ' + dataflow['Name'] + '...OK')
+
+    #Diccionario que contiene a todos los datasources utilizados en el dataflow
+    datasources = dict()
+    
+    # Se ejecutan todas las operaciones del flujo
+    for step in dataflow['Operations']:
+
+        if step['name'] in dhOperations.__dict__:
+            funcion = dhOperations.__dict__[step['name']]
+            if callable(funcion):
+                print('********************************************************** Operación ---> ' + step['name'])
+                ini = datetime.now()
+                EjecucionCorrecta, resultado = funcion(datasources, args, step)
+                fin = datetime.now()
+                print('Tiempo de Ejecución: ' + str(fin - ini))
+                if EjecucionCorrecta:
+                    dhLogs.registrar_ejecucion_exitosa_operacion_dataflow_prj ( args['flow_id'], step )
+                else:
+                    print ('\nERROR:')
+                    if 'execute_error_text' in step:
+                        print(step['execute_error_text'])
+                    dhLogs.registrar_ejecucion_fallida_operacion_dataflow_prj( args['flow_id'], step )
+                    break
+        else:
+            print ('la operación no existe:' + step['operation'])
+            step['execute_error_text'] = 'la operación no existe:' + step['operation']
+            dhLogs.registrar_ejecucion_fallida_operacion_dataflow_prj(args['flow_id'], step)
+
+    for val in datasources:
+        print('---------------------------------------' + val + '---------------------------------------')
+        print(datasources[val])
+
+    return jsonify({'msg': "Back jalando"})
  
 
 if __name__ == "__main__":

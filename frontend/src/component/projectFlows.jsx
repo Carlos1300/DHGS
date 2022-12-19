@@ -7,14 +7,14 @@ import swal from 'sweetalert';
 
 const API = process.env.REACT_APP_API;
 
-export const Flows = () => {
+export const ProjectFlows = () => {
 
   const [activeProject, setActiveProject] = useContext(ProjectContext)
 
   const [flows, setFlows] = useState([]);
 
   const getFlows = async () =>{
-    const res = await fetch(API + '/getGeneralFlows/' + localStorage.getItem('email'));
+    const res = await fetch(API + '/getProjectFlows/' + localStorage.getItem('project'));
     const data = await res.json();
     setFlows(data);
   }
@@ -23,9 +23,9 @@ export const Flows = () => {
     getFlows();
   }, [])
 
-  const importFlow = async (id) => {
+  const applyFlow = async (id) => {
 
-    const res = await fetch(API + '/importFlow/' + localStorage.getItem('email') + '/' + localStorage.getItem('project'),{
+    const res = await fetch(API + '/applyFlow/' + localStorage.getItem('project'),{
       method: 'POST',
       headers:{
           "Access-Control-Allow-Origin": "*",
@@ -74,25 +74,24 @@ export const Flows = () => {
       )
     }},
     { field: "DateCreated", headerName: "Fecha de Creación", width: 300 },
+    { field: "action", headerName: "Acción", width: 120, renderCell:(params)=>{
+      return(
+        <div className="cellAction">
+          <div className="viewButton" onClick={() => applyFlow(params.row._id)}>Aplicar</div>
+        </div>
+      )
+    }}
   ];
-
-  const actionColumn = { field: "action", headerName: "Acción", width: 120, renderCell:(params)=>{
-    return(
-      <div className="cellAction">
-        <div className="viewButton" onClick={() => importFlow(params.row._id)}>Importar</div>
-      </div>
-    )
-  }}
 
   return(
       <div className="datatable">
         <div className="manageTable">
-          <h1 className="title">Mis Flujos Generales</h1>
+          <h1 className="title">Flujos del Proyecto: {localStorage.getItem('project')}</h1>
           <Link to="/nuevoflujo"><div className="addButton">Agregar Flujo</div></Link>
         </div>
           <DataGrid
           rows={flows}
-          columns={activeProject !== 'None' ? columns.concat(actionColumn) : columns }
+          columns={columns}
           pageSize={9}
           rowsPerPageOptions={[9]}
           getRowId={(row) => row._id}

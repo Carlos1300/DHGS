@@ -278,6 +278,7 @@ if __name__ == '__main__':
                     help='objectid de la fuente sobre la que se ejecutará el flujo')
     ap.add_argument('-fid', '--flow_id', required=True, help='objectid del dataflow que se va a ejecutar')
     args = vars(ap.parse_args())
+    print(args)
 
     print('\n**************************************************************************************************************************')
     print('**************************************************************************************************************************')

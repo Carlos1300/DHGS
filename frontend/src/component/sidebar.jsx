@@ -105,6 +105,12 @@ export const Sidebar = () => {
                         <span>Cargas de Datos</span>
                       </li>
                     </Link>
+                    <Link to= '/projectflows'>
+                      <li>
+                        <AccountTreeIcon className="icon"/>
+                        <span>Flujos del Proyecto</span>
+                      </li>
+                    </Link>
                   </div>
                 ) : (<div></div>)
                 

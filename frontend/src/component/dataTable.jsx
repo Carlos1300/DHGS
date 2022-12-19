@@ -39,7 +39,7 @@ export const DataTable = () => {
     { field: 'id', headerName: "ID" },
     { field: 'ProjectName', headerName: "Nombre de Proyecto", width: 330},
     { field: "DataBaseName", headerName: "Base de Datos", width: 230 },
-    { field: "DateCreated", headerName: "Fecha y Hora de Creación", width: 330 },
+    { field: "DateCreated", headerName: "Fecha de Creación", width: 330 },
     { field: "action", headerName: "Acción", width: 200, renderCell:(params)=>{
       return(
         <div className="cellAction">

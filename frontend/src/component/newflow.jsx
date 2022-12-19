@@ -15,14 +15,14 @@ export const NewFlow = () =>{
     const [availableRules, setAvailableRules] = useState([]);
     const navigate = useNavigate();
 
-    const getProjects = async () =>{
+    const getRules = async () =>{
         const res = await fetch(API + '/getRules');
         const data = await res.json();
         setAvailableRules(data);
       }
     
       useEffect(() => {
-        getProjects();
+        getRules();
       }, [])
 
     const extractParams = () => {
@@ -83,11 +83,18 @@ export const NewFlow = () =>{
 
         let JSONelement = {};
 
-        let order = 0;
+        JSONdata.push({...{
+            dispname: "Cargar fuente",
+            order: 0,
+            name: "load_source_main"
+        }})
+
+        let order = 1;
 
         if(rulesList.length !== 0 && paramsList.length !== 0){ 
             for (const rule of availableRules.map(a => a)){
                 if (rulesList.includes(rule.value)){
+                    JSONelement.dispname = rule.name
                     JSONelement.name = rule.value
                     JSONelement.order = order;
                     order++;
@@ -104,7 +111,12 @@ export const NewFlow = () =>{
             }
         }
 
-        console.log(JSONdata)
+        JSONdata.push({...{
+            dispname: "Guardar Datos",
+            order: order++,
+            name: "save_source_main",
+            collection: "DataCleaned"
+        }})
             
         const res = await fetch(API + '/addFlow/' + localStorage.getItem('email'),{
             method: 'POST',
@@ -172,7 +184,6 @@ export const NewFlow = () =>{
                             }
 
                             <div className="changebuttons">
-                                <button disabled={page === 0}>Anterior</button>
                                 <button onClick={() => {setPage((page) => page + 1); extractParams()}}>Siguiente</button>
                             </div>
                         </div>
@@ -184,10 +195,14 @@ export const NewFlow = () =>{
 
                                         extractedParams.map(item => (
                                             item.map((param, index) => (
-                                                <div className="col" key={index}>
-                                                    <p className="displayName">{param.display_name}</p>
-                                                    <input className="parambox" placeholder={param.desc} onChange={handleParamChange} name={param.name} type={param.type} required/>
-                                                </div>
+                                                param.name !== 'None' ? (
+                                                    <div className="col" key={index}>
+                                                        <p className="displayName">{param.display_name}</p>
+                                                        <input className="parambox" placeholder={param.desc} onChange={handleParamChange} name={param.name} type={param.type} required/>
+                                                    </div>
+                                                ) : (
+                                                    <></>
+                                                )
                                             ))
                                         ))
                                     ) : (

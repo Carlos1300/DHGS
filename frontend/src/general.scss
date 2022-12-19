@@ -378,6 +378,12 @@
 .datatable{
     height: 620px;
     padding: 20px;
+    
+    .flowNames{
+        list-style: none;
+        padding: 0;
+        list-style-type: none;
+    }
 
     .manageTable{
         display: flex;
@@ -605,8 +611,7 @@
 
                 .changebuttons{
                     display: flex;
-                    align-items: center;
-                    gap: 1120px;
+                    align-items: flex-end;
 
                     button{
                         padding: 5px;

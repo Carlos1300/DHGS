@@ -1,14 +1,14 @@
 from ast import main
 from numpy import AxisError, DataSource
 from pandas.core.frame import DataFrame
-import dhRepository as dhRep
+from DHUtils import dhRepository as dhRep
 import json
 import pandas as pd
-import dhLogs as log
+from DHUtils import dhLogs as log
 from bson.objectid import ObjectId
 from openpyxl.workbook import Workbook
 from io import StringIO
-from dhUtilities import ValidarFormatoObjeto
+from DHUtils import dhUtilities
 from itertools import repeat
 import html
 import re
@@ -114,7 +114,7 @@ def validate_vs_layout_datatypes (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
     for col in layout['columns']:
         resul = dtFrDatos[col['column_name']].apply(
-            lambda cl: ValidarFormatoObjeto(cl, col['data_type'], col['allow_null']))
+            lambda cl: dhUtilities.ValidarFormatoObjeto(cl, col['data_type'], col['allow_null']))
 
         if len(resul) > 0:
             resul = resul[resul == False]
