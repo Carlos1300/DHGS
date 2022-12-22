@@ -143,7 +143,6 @@ def add_project(email):
     
     if not add_project_request['name'] in MONGO_CLIENT.list_database_names():
         dhRepository.create_database(MONGO_CLIENT, add_project_request['name'])
-        print('Se ha creado la base de datos')
     
     doc = dhRepository.BuscarRegistroEnBD('Projects', 'ProjectName', add_project_request['name'])
     if doc == None:
@@ -307,11 +306,15 @@ def get_project_flows(project):
 def import_flow(email, project):
     flow_id = request.get_json()
     
-    flow = MONGO_CLIENT['datahub']['GeneralFlows'].find_one({'_id': ObjectId(flow_id), 'User': email})
+    flow = MONGO_CLIENT[project]['DataFlows'].find_one({'_id': ObjectId(flow_id), 'User': email})
     
-    MONGO_CLIENT[project]['DataFlows'].insert_one(flow)
+    if flow == None:
+        imported_flow = MONGO_CLIENT['datahub']['GeneralFlows'].find_one({'_id': ObjectId(flow_id), 'User': email})
+        MONGO_CLIENT[project]['DataFlows'].insert_one(imported_flow)
+        return jsonify({'msg': 'El flujo ha sido importado con éxito.' })
     
-    return jsonify({'msg': str(flow)})
+    else:
+        return jsonify({'msg': 'El flujo ya se encuentra importado en este proyecto.'}), 401
 
 @app.route('/applyFlow/<project>', methods=['POST'])
 def apply_flow(project):

@@ -38,17 +38,17 @@ export const Flows = () => {
 
     if(res.status !== 200 && data.msg !== ''){
         swal({
-            title: 'Error al cargar la fuente de datos',
-            text: 'Revise de nuevo los campos.',
+            title: 'Error al importar el flujo',
+            text: 'Este flujo ya se encuentra en el proyecto.',
             icon: 'error',
-            button: 'Volver a intentarlo',
+            button: 'Volver',
             confirmButtonColor: "#000",
             timer: "10000"
         });
 
     }else{
         swal({
-            title: 'Carga exitosa',
+            title: 'Flujo agregado',
             text: data.msg,
             icon: 'success',
             button: 'Continuar',
@@ -96,6 +96,8 @@ export const Flows = () => {
           pageSize={9}
           rowsPerPageOptions={[9]}
           getRowId={(row) => row._id}
+          getRowHeight={() => 'auto'}
+          getEstimatedRowHeight={() => 200}
           disableSelectionOnClick
           />
       </div>

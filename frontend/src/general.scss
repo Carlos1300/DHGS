@@ -574,6 +574,10 @@
                     .ruletitle{
                         font-size: 14px;
                         font-weight: 800;
+
+                        &.none{
+                            visibility: hidden;
+                        }
                     }
 
                     .ruledesc{
@@ -598,6 +602,16 @@
                         }
                     }
 
+                    hr{
+                        width: 100%;
+                        border: 0.5px solid #000;
+                        background-color: #000;
+                    }
+
+                    .noParams{
+                        text-align: center;
+                    }
+
                     &.warn{
                         display: flex;
                         align-content: center;
@@ -607,24 +621,16 @@
                             font-size: 24px;
                         }
                     }
-                }
 
-                .changebuttons{
-                    display: flex;
-                    align-items: flex-end;
+                    &.parameters{
+                        margin: 10px 0px 10px 0px;
 
-                    button{
-                        padding: 5px;
-                        color: white;
-                        background-color: #18615B;
-                        border: none;
-
-                        &:disabled{
-                            background-color: lightgray;
-                            color: black;
+                        .ruletitle{
+                            font-size: 20px;
                         }
                     }
                 }
+
             }
 
             .title{
@@ -684,6 +690,29 @@
                         cursor: pointer;
                         margin-top: 10px;
                     }
+                }
+            }
+        }
+
+        .changebuttons{
+            display: flex;
+            padding: 0px 10px 10px 10px;
+            margin: 0px 10px 0px 10px;
+            justify-content: flex-end;
+
+            &.second{
+                justify-content: space-between;
+            }
+
+            button{
+                padding: 5px;
+                color: white;
+                background-color: #18615B;
+                border: none;
+
+                &:disabled{
+                    background-color: lightgray;
+                    color: black;
                 }
             }
         }

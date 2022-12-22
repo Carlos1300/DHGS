@@ -89,7 +89,7 @@ export const New = () =>{
                         <form onSubmit={handleSubmit}>
                             <div className="formInput">
                                 <label htmlFor="file">Fuente de Datos: <DriveFolderUploadIcon className="icon" /></label>
-                                <input type="file" id="file" name="dataSource" onChange={e => setFile(e.target.files[0])} style={{display: "none"}} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
+                                <input type="file" id="file" name="dataSource" onChange={e => setFile(e.target.files[0])} style={{display: "none"}} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"/>
                             </div>
                             <div className="formInput">
                                 <label>Nombre de Proyecto</label>
@@ -112,7 +112,7 @@ export const New = () =>{
                                 <label>Codificación</label>
                                 <select name="enc" onChange={e => setEnc(e.target.value)}>
                                     <option value="UTF-8" selected>UTF-8</option>
-                                    <option value="ISO">ISO</option>
+                                    <option value="ISO-8859-1">ISO-8859-1</option>
                                     <option value="LATIN">LATIN</option>
                                     <option value="OTRO">OTRO</option>
                                 </select>

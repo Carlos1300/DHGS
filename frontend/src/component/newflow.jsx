@@ -28,18 +28,21 @@ export const NewFlow = () =>{
     const extractParams = () => {
 
         const extractedParams = [];
+        const paramJSON = {};
 
         for ( let i=0 ; i < availableRules.length ; i++) {
             if (rulesList.includes(availableRules[i].value)){
-                extractedParams.push(availableRules[i].params)
+                paramJSON.name = availableRules[i].name;
+                paramJSON.params = availableRules[i].params
+                extractedParams.push({...paramJSON})
             }
         }
+
 
         return extractedParams;
     }
 
-    const extractedParams = extractParams();
-
+    // const extractedParams = extractParams();
 
     const handleChange = (e) =>{
         const {value, checked} = e.target;
@@ -159,7 +162,21 @@ export const NewFlow = () =>{
         
     }
 
-    const titles = ['Agregar Reglas', 'Agregar Parámetros']
+    const titles = ['Agregar Reglas', 'Agregar Parámetros'];
+
+    const forwardButton = () =>{
+        setPage((page) => page + 1);
+        extractParams();
+
+    }
+
+    const returnButton = () =>{
+        setRulesList((rulesList) => rulesList.splice(0, rulesList.length))
+        setPage((page) => page - 1);
+    }
+
+    console.log(rulesList)
+    console.log(extractParams())
 
     return(
         <div className="new">
@@ -169,6 +186,7 @@ export const NewFlow = () =>{
                 <div className="top">
                     <h1 className="title">{titles[page]}</h1>
                 </div>
+
                 {
                     page === 0 ? (
 
@@ -182,26 +200,28 @@ export const NewFlow = () =>{
                                     </div>
                                 ))
                             }
-
-                            <div className="changebuttons">
-                                <button onClick={() => {setPage((page) => page + 1); extractParams()}}>Siguiente</button>
-                            </div>
                         </div>
                     ) : (
                             <div className="bottom flow">
 
                                 {
-                                    extractedParams.length !== 0 ? (
+                                    extractParams().length !== 0 ? (
 
-                                        extractedParams.map(item => (
-                                            item.map((param, index) => (
+                                        extractParams().map(item => (
+                                            item.params.map((param, index) => (
                                                 param.name !== 'None' ? (
-                                                    <div className="col" key={index}>
-                                                        <p className="displayName">{param.display_name}</p>
+                                                    <div className="col parameters" key={index}>
+                                                        <p className={index === 0 ? 'ruletitle' : 'ruletitle none'}>{item.name}</p>
+                                                        <p className="displayName" key={index}>{param.display_name}</p>
                                                         <input className="parambox" placeholder={param.desc} onChange={handleParamChange} name={param.name} type={param.type} required/>
+                                                        <hr></hr>
                                                     </div>
                                                 ) : (
-                                                    <></>
+                                                    <div className="col parameters" key={index}>
+                                                        <p className="ruletitle">{item.name}</p>
+                                                        <p className="noParams">Esta regla no cuenta con parámetros.</p>
+                                                        <hr></hr>
+                                                    </div>
                                                 )
                                             ))
                                         ))
@@ -213,13 +233,22 @@ export const NewFlow = () =>{
 
                                 }
 
-                                <div className="changebuttons">
-                                    <button onClick={() => {setPage((page) => page - 1); setParamsList([]);}}>Anterior</button>
-                                    <button disabled={extractedParams.length === 0} onClick={handleSubmit}>Añadir</button>
-                                </div>
                             </div>
                     )
                 }
+
+                {page === 0 ? (
+                    <div className="changebuttons">
+                        <button onClick={() => {setPage((page) => page + 1); extractParams()}}>Siguiente</button>
+                    </div>
+
+                ):(
+                    <div className="changebuttons second">
+                        <button onClick={returnButton}>Anterior</button>
+                        <button disabled={extractParams().length === 0} onClick={handleSubmit}>Añadir</button>
+                    </div>
+
+                )}
             </div>
         </div>
     )

@@ -9,8 +9,6 @@ const API = process.env.REACT_APP_API;
 
 export const ProjectFlows = () => {
 
-  const [activeProject, setActiveProject] = useContext(ProjectContext)
-
   const [flows, setFlows] = useState([]);
 
   const getFlows = async () =>{
@@ -95,6 +93,8 @@ export const ProjectFlows = () => {
           pageSize={9}
           rowsPerPageOptions={[9]}
           getRowId={(row) => row._id}
+          getRowHeight={() => 'auto'}
+          getEstimatedRowHeight={() => 200}
           disableSelectionOnClick
           />
       </div>
