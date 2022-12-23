@@ -244,11 +244,12 @@ def get_rules():
 @app.route('/addFlow/<email>', methods=['POST'])
 def add_flow(email):
     
-    operations = request.get_json()
-    print(operations)
+    coming_json = request.get_json()
+    flow_name = coming_json[0]['flowName']
+    operations = coming_json[1:]
     
     new_flow = MONGO_CLIENT['datahub']['GeneralFlows'].insert_one({
-        "Name": "PruebaBack",
+        "Name": flow_name,
         "Operations": operations,
         "User": email,
         "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year)

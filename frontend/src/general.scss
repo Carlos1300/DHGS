@@ -560,13 +560,42 @@
             margin: 20px;
             display: flex;
 
+            &.flowname{
+                flex-direction: column;
+
+                .ruletitle{
+                    font-size: 18px;
+                    font-weight: 800;
+                    margin-bottom: 5px;
+                }
+
+                .parambox{
+                    margin-top: 0px;
+                    margin-bottom: 10px;
+                    border: none;
+                    border-bottom: 1px solid gray;
+
+                    &::placeholder{
+                        font-size: 14px;
+                        color: gray;
+                    }
+
+                    &.none{
+                        display: none;
+                    }
+                }
+
+                &.none{
+                    display: none;
+                }
+            }
+
             &.flow{
                 box-shadow: 2px 4px 10px 1px rgb(201 201 201 / 47%);
                 padding: 10px;
                 margin: 20px;
                 display: flex;
                 flex-wrap: wrap;
-            
 
                 .col{
                     flex: 33%;
@@ -587,7 +616,8 @@
 
                     .displayName{
                         font-size: 14px;
-                        font-weight: 800;
+                        font-weight: 600;
+                        margin-bottom: 5px;
                     }
 
                     .parambox{

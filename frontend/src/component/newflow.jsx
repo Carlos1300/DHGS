@@ -13,6 +13,7 @@ export const NewFlow = () =>{
     const [paramsList, setParamsList] = useState([]);
     const [page, setPage] = useState(0);
     const [availableRules, setAvailableRules] = useState([]);
+    const [flowName, setFlowName] = useState("");
     const navigate = useNavigate();
 
     const getRules = async () =>{
@@ -83,6 +84,10 @@ export const NewFlow = () =>{
         e.preventDefault();
 
         const JSONdata = [];
+
+        JSONdata.push({...{
+            flowName: flowName
+        }});
 
         let JSONelement = {};
 
@@ -175,9 +180,6 @@ export const NewFlow = () =>{
         setPage((page) => page - 1);
     }
 
-    console.log(rulesList)
-    console.log(extractParams())
-
     return(
         <div className="new">
             <Sidebar />
@@ -185,6 +187,10 @@ export const NewFlow = () =>{
                 <Navbar />
                 <div className="top">
                     <h1 className="title">{titles[page]}</h1>
+                </div>
+                <div className={ page !== 0 ? "top flowname none" : "top flowname"}>
+                    <p className="ruletitle">Nombre</p>
+                    <input className="parambox" type="text" name="flowName" value={flowName} onChange={e => setFlowName(e.target.value)} required placeholder="Nombre del Flujo" />
                 </div>
 
                 {
@@ -202,19 +208,20 @@ export const NewFlow = () =>{
                             }
                         </div>
                     ) : (
-                            <div className="bottom flow">
-
+                                <>
                                 {
                                     extractParams().length !== 0 ? (
 
-                                        extractParams().map(item => (
-                                            item.params.map((param, index) => (
+                                        extractParams().map((item, index) => {
+                                            return(
+                                                <div key={index} className="bottom flow">
+                                            {item.params.map((param, index) => {
+                                                return(
                                                 param.name !== 'None' ? (
                                                     <div className="col parameters" key={index}>
                                                         <p className={index === 0 ? 'ruletitle' : 'ruletitle none'}>{item.name}</p>
                                                         <p className="displayName" key={index}>{param.display_name}</p>
                                                         <input className="parambox" placeholder={param.desc} onChange={handleParamChange} name={param.name} type={param.type} required/>
-                                                        <hr></hr>
                                                     </div>
                                                 ) : (
                                                     <div className="col parameters" key={index}>
@@ -223,23 +230,26 @@ export const NewFlow = () =>{
                                                         <hr></hr>
                                                     </div>
                                                 )
-                                            ))
-                                        ))
+                                            )})}
+                                            </div>
+                                        )})
+                                        
                                     ) : (
-                                        <div className="col warn" style={{justifyContent: "center"}}>
-                                            <p className="warning">¡Ninguna regla seleccionada!</p>
+                                        <div className="bottom flow">
+                                            <div className="col warn" style={{justifyContent: "center"}}>
+                                                <p className="warning">¡Ninguna regla seleccionada!</p>
+                                            </div>
                                         </div>
                                     )
 
                                 }
-
-                            </div>
+                        </>
                     )
                 }
 
                 {page === 0 ? (
                     <div className="changebuttons">
-                        <button onClick={() => {setPage((page) => page + 1); extractParams()}}>Siguiente</button>
+                        <button onClick={forwardButton}>Siguiente</button>
                     </div>
 
                 ):(
