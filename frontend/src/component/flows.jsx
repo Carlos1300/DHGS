@@ -14,7 +14,7 @@ export const Flows = () => {
   const [flows, setFlows] = useState([]);
 
   const getFlows = async () =>{
-    const res = await fetch(API + '/getGeneralFlows/' + localStorage.getItem('email'));
+    const res = await fetch(API + '/my_flows/' + localStorage.getItem('email'));
     const data = await res.json();
     setFlows(data);
   }
@@ -58,6 +58,49 @@ export const Flows = () => {
     }
   }
 
+  const deleteFlow = async (objId, id) => {
+
+    const res = await fetch(API + '/my_flows/' + localStorage.getItem('email'),{
+      method: 'DELETE',
+      headers:{
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+      },
+      body: JSON.stringify(objId),
+    });
+
+    const data = await res.json();
+
+    if(res.status !== 200 && data.msg !== ''){
+        swal({
+            title: 'Error al importar el flujo',
+            text: 'Este flujo ya se encuentra en el proyecto.',
+            icon: 'error',
+            button: 'Volver',
+            confirmButtonColor: "#000",
+            timer: "10000"
+        });
+    }else{
+
+      swal({
+          title: 'Flujo eliminado',
+          text: data.msg,
+          icon: 'success',
+          button: 'Continuar',
+          confirmButtonColor: "#000",
+          timer: "10000"
+      })
+
+      setFlows((flows) => {
+        const rowToDeleteIndex = id - 1;
+        return [
+          ...flows.slice(0, rowToDeleteIndex),
+          ...flows.slice(rowToDeleteIndex + 1),
+        ];
+      });
+    }
+  }
+
   const columns = [
     { field: '_id', hide: true},
     { field: 'id', headerName: "ID" },
@@ -73,13 +116,14 @@ export const Flows = () => {
         </ul>
       )
     }},
-    { field: "DateCreated", headerName: "Fecha de Creación", width: 300 },
+    { field: "DateCreated", headerName: "Fecha de Creación", width: 150 },
   ];
 
-  const actionColumn = { field: "action", headerName: "Acción", width: 120, renderCell:(params)=>{
+  const actionColumn = { field: "action", headerName: "Acción", width: 170, renderCell:(params)=>{
     return(
       <div className="cellAction">
         <div className="viewButton" onClick={() => importFlow(params.row._id)}>Importar</div>
+        <div className="deleteButton" onClick={() => deleteFlow(params.row._id, params.row.id)}>Eliminar</div>
       </div>
     )
   }}

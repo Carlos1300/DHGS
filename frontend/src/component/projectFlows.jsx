@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import "../general.scss";
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from "react-router-dom";
-import { ProjectContext } from "../context/projectContext";
+// import { ProjectContext } from "../context/projectContext";
 import swal from 'sweetalert';
 
 const API = process.env.REACT_APP_API;
@@ -12,7 +12,7 @@ export const ProjectFlows = () => {
   const [flows, setFlows] = useState([]);
 
   const getFlows = async () =>{
-    const res = await fetch(API + '/getProjectFlows/' + localStorage.getItem('project'));
+    const res = await fetch(API + '/project_flows/' + localStorage.getItem('project'));
     const data = await res.json();
     setFlows(data);
   }
@@ -52,7 +52,50 @@ export const ProjectFlows = () => {
             button: 'Continuar',
             confirmButtonColor: "#000",
             timer: "10000"
-        })
+      })
+    }
+  }
+
+  const deleteFlow = async (objId, id) => {
+
+    const res = await fetch(API + '/project_flows/' + localStorage.getItem('project'),{
+      method: 'DELETE',
+      headers:{
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+      },
+      body: JSON.stringify(objId),
+    });
+
+    const data = await res.json();
+
+    if(res.status !== 200 && data.msg !== ''){
+        swal({
+            title: 'Error al eliminar el flujo',
+            text: 'Revise de nuevo los campos.',
+            icon: 'error',
+            button: 'Volver a intentarlo',
+            confirmButtonColor: "#000",
+            timer: "10000"
+        });
+
+    }else{
+        swal({
+            title: 'Se eliminó el flujo',
+            text: data.msg,
+            icon: 'success',
+            button: 'Continuar',
+            confirmButtonColor: "#000",
+            timer: "10000"
+      })
+
+      setFlows((flows) => {
+        const rowToDeleteIndex = id - 1;
+        return [
+          ...flows.slice(0, rowToDeleteIndex),
+          ...flows.slice(rowToDeleteIndex + 1),
+        ];
+      });
     }
   }
 
@@ -71,11 +114,12 @@ export const ProjectFlows = () => {
         </ul>
       )
     }},
-    { field: "DateCreated", headerName: "Fecha de Creación", width: 300 },
-    { field: "action", headerName: "Acción", width: 120, renderCell:(params)=>{
+    { field: "DateCreated", headerName: "Fecha de Creación", width: 150 },
+    { field: "action", headerName: "Acción", width: 170, renderCell:(params)=>{
       return(
         <div className="cellAction">
           <div className="viewButton" onClick={() => applyFlow(params.row._id)}>Aplicar</div>
+          <div className="deleteButton" onClick={() => deleteFlow(params.row._id, params.row.id)}>Eliminar</div>
         </div>
       )
     }}

@@ -105,6 +105,35 @@ def login():
     else:
         return jsonify({"msg": "Usuario no dado de alta"}), 401
     
+@app.route('/dashboard_info/<email>', methods=['GET'])
+def get_dashboard_info(email):
+    COLLECTIONS = ['Projects', 'GeneralFlows', 'Rules']
+    
+    count_array = []
+    
+    for collection in COLLECTIONS:
+        
+        data_array = []
+        
+        if collection == 'Rules':
+            
+            for doc in MONGO_CLIENT['datahub'][collection].find():
+                data_array.append({
+                    '_id': str(ObjectId(doc['_id']))
+                })
+            
+        for doc in MONGO_CLIENT['datahub'][collection].find({'User': email}):
+            data_array.append({
+                '_id': str(ObjectId(doc['_id']))
+            })
+            
+        count_array.append(len(data_array))
+    
+    print(count_array)
+                
+        
+    return jsonify(count_array)
+    
     
 @app.route('/getProjects/<email>', methods=['GET'])
 def get_projects(email):
@@ -241,67 +270,79 @@ def get_rules():
     
     return jsonify(rules)
 
-@app.route('/addFlow/<email>', methods=['POST'])
-def add_flow(email):
-    
-    coming_json = request.get_json()
-    flow_name = coming_json[0]['flowName']
-    operations = coming_json[1:]
-    
-    new_flow = MONGO_CLIENT['datahub']['GeneralFlows'].insert_one({
-        "Name": flow_name,
-        "Operations": operations,
-        "User": email,
-        "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year)
-    })
-    
-    return jsonify({"msg": "Jaló el back: " + str(ObjectId(new_flow.inserted_id))})
-
-@app.route('/getGeneralFlows/<email>', methods=['GET'])
-def get_gen_flows(email):
-    
-    flows = []
+@app.route('/my_flows/<email>', methods=['POST', 'GET', 'DELETE'])
+def flow_manipulation(email):
     
     id = 1
+    flows = []
     
+    if request.method == 'POST':
     
-    for doc in MONGO_CLIENT['datahub']['GeneralFlows'].find({'User': email}):
-        flows.append({
-            'id': id,
-            '_id': str(ObjectId(doc['_id'])),
-            "FlowName": doc["Name"],
-            "Operations": len(doc["Operations"]),
-            "Sequence": doc["Operations"],
-            "DateCreated": doc["DateCreated"]
+        coming_json = request.get_json()
+        flow_name = coming_json[0]['flowName']
+        operations = coming_json[1:]
+        
+        new_flow = MONGO_CLIENT['datahub']['GeneralFlows'].insert_one({
+            "Name": flow_name,
+            "Operations": operations,
+            "User": email,
+            "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year)
         })
         
-        
-        id += 1
+        return jsonify({"msg": "El flujo ha sido insertado con el ID de Objeto: " + str(ObjectId(new_flow.inserted_id))})
     
-    return jsonify(flows)
+    elif request.method == 'DELETE':
+        delete_id = request.get_json()
+        MONGO_CLIENT['datahub']['GeneralFlows'].delete_one({'_id': ObjectId(delete_id)})
+        return jsonify({"msg": "El flujo ha sido eliminado."})
+    
+    else:
+        for doc in MONGO_CLIENT['datahub']['GeneralFlows'].find({'User': email}):
+            flows.append({
+                'id': id,
+                '_id': str(ObjectId(doc['_id'])),
+                "FlowName": doc["Name"],
+                "Operations": len(doc["Operations"]),
+                "Sequence": doc["Operations"],
+                "DateCreated": doc["DateCreated"]
+            })
+        
+            id += 1
+    
+        return jsonify(flows)
 
-@app.route('/getProjectFlows/<project>', methods=['GET'])
-def get_project_flows(project):
+@app.route('/project_flows/<project>', methods=['GET', 'POST', 'DELETE'])
+def project_flows(project):
     
     project_flows = []
     
     id = 1
     
     
-    for doc in MONGO_CLIENT[project]['DataFlows'].find():
-        project_flows.append({
-            'id': id,
-            '_id': str(ObjectId(doc['_id'])),
-            "FlowName": doc["Name"],
-            "Operations": len(doc["Operations"]),
-            "Sequence": doc["Operations"],
-            "DateCreated": doc["DateCreated"]
-        })
-        
-        
-        id += 1
+    if request.method == 'POST':
     
-    return jsonify(project_flows)
+        pass
+    
+    elif request.method == 'DELETE':
+        delete_id = request.get_json()
+        MONGO_CLIENT[project]['DataFlows'].delete_one({'_id': ObjectId(delete_id)})
+        return jsonify({"msg": "El flujo ha sido eliminado."})
+    
+    else:
+        for doc in MONGO_CLIENT[project]['DataFlows'].find():
+            project_flows.append({
+                'id': id,
+                '_id': str(ObjectId(doc['_id'])),
+                "FlowName": doc["Name"],
+                "Operations": len(doc["Operations"]),
+                "Sequence": doc["Operations"],
+                "DateCreated": doc["DateCreated"]
+            })
+            
+            
+            id += 1
+        
+        return jsonify(project_flows)
 
 @app.route('/importFlow/<email>/<project>', methods=['POST'])
 def import_flow(email, project):

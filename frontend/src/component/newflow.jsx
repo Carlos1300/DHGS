@@ -126,7 +126,7 @@ export const NewFlow = () =>{
             collection: "DataCleaned"
         }})
             
-        const res = await fetch(API + '/addFlow/' + localStorage.getItem('email'),{
+        const res = await fetch(API + '/my_flows/' + localStorage.getItem('email'),{
             method: 'POST',
             headers:{
                 "Access-Control-Allow-Origin": "*",
