@@ -647,8 +647,8 @@ def get_substring(datasources, mainParams, stepdict = None):
     df_main = datasources['_main_ds']
     origen = stepdict['col_origen']
     destino = stepdict['col_destino']
-    init_word = stepdict['init_word']
-    total_words = stepdict['total_words']
+    init_word = int(stepdict['init_word'])
+    total_words = int(stepdict['total_words'])
     sep = str(stepdict['separator'])
     join_char = str(stepdict['join_char'])
 
@@ -677,8 +677,10 @@ def concat_columns(datasources, mainParams, stepdict = None):
         ResultadoExitoso: Verdadero si la ejecución de la función ocurrió sin problemas, Falso en caso contrario
         DataFrameResultado: Dataframe con la columna de llaves añadida.
     """
+    
     df_main = datasources['_main_ds']
-    origen = stepdict["cols_origen"]
+    origen = stepdict["col_origen"].split(', ')
+    print(origen)
     dest = stepdict["col_destino"]
     join_char = stepdict["join_char"]
     df_main[dest] = df_main[origen].apply(lambda row: join_char.join(row.values.astype(str)), axis=1)

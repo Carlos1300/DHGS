@@ -4,6 +4,7 @@ from flask_cors import CORS
 from DHUtils import dhRepository, DatahubEx, dhOperations, dhLogs
 import pandas as pd
 from datetime import datetime
+import csv
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
@@ -415,8 +416,34 @@ def apply_flow(project):
         print('---------------------------------------' + val + '---------------------------------------')
         print(datasources[val])
 
-    return jsonify({'msg': "Back jalando"})
- 
+    return jsonify({'msg': "Se aplicó el flujo correctamente."})
+
+@app.route('/export_data/<email>', methods=['GET', 'POST'])
+def export_data(email):
+    export_json = request.get_json()
+    
+    source_id = MONGO_CLIENT[export_json['projectName']]['DataCleaned'].find_one()['_id']
+    print(source_id)
+    
+    bdProyecto = dhRepository.EstablecerBDProjecto(export_json['projectName'])
+    if bdProyecto is None:
+        print('ERROR: El proyecto Especificado no existe, verifique su parámetro : -pnm')
+        exit(-1)
+    else:
+        print('Estableciendo BD Proyecto ...OK')
+
+    cleaned = dhRepository.BuscarDocumentoporId_Proyecto('DataCleaned', source_id)
+
+    dictObj = dhRepository.obtener_atributos_por_docid_prj('DataCleaned', source_id, ['schema','data'])
+    dtfrm = pd.read_json(json.dumps(dictObj), orient='table')
+
+    if export_json['fileType'] == 'csv':
+        output_name = export_json['outputName'] + '.csv'
+        return jsonify({'data': dtfrm.to_csv(), 'type': 'csv', 'filename': output_name})
+    
+    elif export_json['fileType'] == 'xlsx':
+        output_name = export_json['outputName'] + '.xlsx'
+        return jsonify({'data': json.loads(json.dumps(dictObj)), 'type': 'xlsx', 'filename': output_name})
 
 if __name__ == "__main__":
     app.run(debug=True)

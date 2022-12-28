@@ -554,11 +554,49 @@
     .newContainer{
         flex: 6;
 
+        .exportButton{
+            display: flex;
+            padding: 0px 10px 10px 10px;
+            margin: 0px 10px 0px 10px;
+            justify-content: flex-end;
+
+            button{
+                padding: 5px 10px;
+                color: white;
+                background-color: #18615B;
+                border: none;
+            }
+        }
+
         .top, .bottom{
             box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
             padding: 10px;
             margin: 20px;
             display: flex;
+
+            &.export{
+                box-shadow: 2px 4px 10px 1px rgb(201 201 201 / 47%);
+                padding: 10px;
+                margin: 20px;
+                display: flex;
+                gap: 180px;
+
+                .formInput{
+
+                    .ruletitle{
+                        font-size: 18px;
+                        font-weight: 800;
+                        margin-bottom: 5px;
+                    }
+
+                    .parambox{
+                        margin-top: 0px;
+                        margin-bottom: 10px;
+                        border: none;
+                        border-bottom: 1px solid gray;    
+                    }
+                }
+            }
 
             &.flowname{
                 flex-direction: column;

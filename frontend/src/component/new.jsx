@@ -79,7 +79,7 @@ export const New = () =>{
             <div className="newContainer">
                 <Navbar />
                 <div className="top">
-                    <h1 className="title">Agregar Datos</h1>
+                    <h1 className="title">Importar Datos</h1>
                 </div>
                 <div className="bottom">
                     <div className="left">

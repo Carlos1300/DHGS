@@ -14,6 +14,7 @@ import { ListFlows } from "./component/listFlow";
 import { NewFlow } from "./component/newflow";
 import { AuthContext } from "./context/AuthContext";
 import { ListProjectFlows } from "./component/listProjectFlows";
+import { Export } from "./component/export";
 
 function App() {
 
@@ -61,6 +62,14 @@ function App() {
                 element={
                 <RequireAuth>
                   <ListLoads />
+                </RequireAuth>
+                }
+              />
+              <Route 
+                path="/export" 
+                element={
+                <RequireAuth>
+                  <Export />
                 </RequireAuth>
                 }
               />

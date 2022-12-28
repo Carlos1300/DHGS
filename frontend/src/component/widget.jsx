@@ -21,6 +21,9 @@ export const Widget = ({ type }) =>{
         getCountData();
     }, []);
 
+    // BUSCAR FORMA DE QUE NO SE SOBRECARGUE EL SERVIDOR CON PETICIONES GET AL
+    // HACER FETCH A LOS DATOS DEL DASHBOARD.
+
     let data;
 
     switch(type){

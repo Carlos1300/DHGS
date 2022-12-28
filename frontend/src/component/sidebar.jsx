@@ -81,10 +81,12 @@ export const Sidebar = () => {
                 <span>Flujos</span>
               </li>
             </Link>
-            <li>
-              <DownloadIcon className="icon"/>
-              <span>Exportar</span>
-            </li>
+            <Link to='/export'>
+              <li>
+                <DownloadIcon className="icon"/>
+                <span>Exportar</span>
+              </li>
+            </Link>
               {
                 activeProject !== 'None' ? (
                   <div>
@@ -95,10 +97,12 @@ export const Sidebar = () => {
                         <span>Datos Perfilados</span>
                       </li>
                     </Link>
-                    <li>
-                      <CleaningServicesIcon className="icon"/>
-                      <span>Datos Procesados</span>
-                    </li>
+                    <Link to='/export'>
+                      <li>
+                        <CleaningServicesIcon className="icon"/>
+                        <span>Datos Procesados</span>
+                      </li>
+                    </Link>
                     <Link to= '/dataloads'>
                       <li>
                         <HistoryIcon className="icon"/>
