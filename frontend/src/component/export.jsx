@@ -57,6 +57,14 @@ export const Export = () => {
             link.setAttribute('download', data.filename)
             document.body.appendChild(link)
             link.click()
+        }else{
+            const fileData = JSON.stringify(data.data);
+            const blob = new Blob([fileData], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.download = data.filename;
+            link.href = url;
+            link.click();
         }
     }
 

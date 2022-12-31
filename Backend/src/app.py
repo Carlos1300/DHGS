@@ -444,6 +444,9 @@ def export_data(email):
     elif export_json['fileType'] == 'xlsx':
         output_name = export_json['outputName'] + '.xlsx'
         return jsonify({'data': json.loads(json.dumps(dictObj)), 'type': 'xlsx', 'filename': output_name})
+    else:
+        output_name = export_json['outputName'] + '.txt'
+        return jsonify({'data': dtfrm.to_csv(), 'type': 'txt', 'filename': output_name})
 
 if __name__ == "__main__":
     app.run(debug=True)
