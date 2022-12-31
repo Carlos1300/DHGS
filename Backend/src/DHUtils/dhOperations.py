@@ -15,6 +15,10 @@ import re
 import numpy as np
 import jellyfish
 import operator
+import unidecode
+from datetime import date
+import openpyxl
+import xlsxwriter
 
 ## Todas las operaciones deben establecer el valor del diccionario '' a True o false
 ## OperaciónCorrecta = {Falso|Verdadero}
@@ -686,3 +690,1428 @@ def concat_columns(datasources, mainParams, stepdict = None):
     df_main[dest] = df_main[origen].apply(lambda row: join_char.join(row.values.astype(str)), axis=1)
     return True, df_main
 
+
+
+#################################################################
+#																#
+#					  Clase principal							#	
+#   -- Contiene todos las rutinas y subrutinas de limpieza --	#
+#																#
+#################################################################
+
+
+#Variable que indica las columnas que contiene el dataframe.
+total_cols = None
+#Variable que guarda la sabana de datos.
+sabana = {}
+#Copia del dataframe
+df_copy = None
+catalogo = {}
+
+
+def set_cat(ruta):
+	global catalogo
+	catalogo = {}
+	with open(ruta, encoding="utf8") as f:
+		for line in f:
+			line = line.replace("\n", "")
+			tokens = line.split("-")
+			key = tokens[0]
+			catalogo[key] = tokens[1]
+	f.close()
+	print(catalogo)
+
+def change_by_cat(df, column):
+	'''
+	Método que reemplaza valores de abreviaturas de acuerdo a un catálogo precargado.
+	'''
+	lista = []
+	keys = list(catalogo.keys())
+	def check(dato):
+		if any((match := key) in dato for key in keys):
+			lista.append(1)
+			dato = dato.replace(match, catalogo[match] + " ")
+		else:
+			lista.append(0)
+		return dato
+
+	df[column] = df[column].apply(lambda x: check(x))
+	sabana[column]["Ajuste Abreviatura"] = lista
+	return df
+
+
+def set_sabana(df):
+	'''
+	Método que inicializa las variables globales.
+	:param df: DataFrame a utilizar.
+	'''
+	global total_cols, sabana, df_copy
+	total_cols = list(df)
+	df_copy = df.copy()
+	sabana = {col: {} for col in total_cols}
+
+def get_sabana():
+	''' Método que retorna la sabana de datos.'''
+	return sabana
+
+
+#Método que busca longitudes 1 y 4. Modificar para usabilidad.
+def rm_by_len_or(df, column):
+    
+	"""
+	Método que modifica valores de una columna de acuerdo a su longitd.
+	"""
+
+	lista=[]
+ 
+	def check_len(dato):
+		dato = str(dato)
+		if len(dato) == 1:
+			dato = ""
+			lista.append(1)
+		elif len(dato) == 4:
+			dato = "0" + dato
+			lista.append(1)
+		else:
+			dato = dato
+			lista.append(0)
+		return dato
+
+	df[column] = df[column].apply(lambda x: check_len(x))
+	sabana[column]["Ajuste longitud"] = lista
+
+	return df
+
+
+def check_no_ex(df, column):
+    #Método interno solicitado por edenred.
+	"""
+    Método que elimina valores de una columna que son 100% compuestois por alfa numéricos.
+
+	"""
+	lista = []
+	def check(dato):
+		dato = str(dato)
+		## Si no es 100% alnum retorna False
+
+		flag = any(c.isalnum() for c in dato)
+		
+		if len(dato) == 1 and dato.isalnum() or flag==False:
+			dato = ""
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato
+
+	df[column] = df[column].apply(lambda x: check(x))
+	sabana[column]["Ajuste NoEx"] = lista
+	return df
+
+
+def check_no_in(df, column):
+	lista = []
+	def check(dato):
+		dato = str(dato)
+		## Si es 100% alnum retorna False
+
+		flag = any(c.isalnum() for c in dato)
+		if flag:
+			lista.append(0)
+		else:
+			lista.append(1)
+			dato = "S/N"
+		return dato
+		
+
+	df[column] = df[column].apply(lambda x: check(x))
+	sabana[column]["Ajuste NoIn"] = lista
+	return df
+
+
+def check_two_cols(df, col1, col2):
+	#Método solicitado por Edenred. Modificar para usabilidad.
+	'''
+	Método que elimina valores de una columna de acuerdo a otra.
+	'''
+	lista = []
+	def check(dato_1, dato_2):
+		if dato_1 == "" and not dato_2 == "A":
+			dato_1 = "Inactivo"
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato_1
+
+	df[col1] = df.apply(lambda x: check(x[col1], x[col2]), axis=1)
+	sabana[col1]["Ajuste GUDIRE"] = lista
+
+	return df
+
+def rm_negativos(df, column):
+	'''
+	Método que elimina números negativos de una columna numerica.
+	'''
+	lista = []
+	def check(dato):
+		dato = str(dato)
+		if dato != "" and dato[0] == "-":
+			lista.append(1)
+			dato = ""
+		else:
+			lista.append(0)
+		return dato
+
+	df[column] = df[column].apply(lambda x: check(x))
+	sabana[column]["Remover Negativos"] = lista
+	return df
+
+def rm_by_comp(df, column):
+	lista = []
+	def check(dato):
+		dato = str(dato)
+		flag = flag = any(c.isalnum() for c in dato)
+		if flag == False:
+			lista.append(1)
+			dato = ""
+		else:
+			lista.append(0)
+		return dato
+
+	df[column] = df[column].apply(lambda x: check(x))
+	sabana[column]["Ajuste AFNORE"] = lista
+	return df
+
+
+
+def trim_col(df, columns, all = False):
+	'''
+	Método que elimina espacios al principio, final e intermedios extras para una columna dada.
+	:param df: DataFrame a utilizar.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	:param all: True se se eliminan todos los espacios que se encuentren. False en caso contrario.
+	'''
+	lista = []
+	def rm_blanks(dato):
+		# Método interno de evaluación por dato
+		dato = str(dato)
+		if not all:
+			if dato.count(" ") >= len(dato.split()):
+				lista.append(1)
+				dato = dato.strip()
+				dato = re.sub(' +', " ", dato)
+			else:
+				lista.append(0)
+		else :
+			if dato.count(" ") >= 1:
+				lista.append(1)
+				dato = re.sub(re.compile(r'\s+'), '', dato)
+			else:
+				lista.append(0)
+		return dato 
+
+	# Se aplica lambdas por columna dada para limpiar los datos
+	for col in columns:
+		df[col] = df[col].apply(
+			lambda x: rm_blanks(x)
+		)
+		# Por cada columna se actualiza la sabana de datos.
+		"""if not all:
+			sabana[col]["Espacios extras"] = lista
+		else: 
+			sabana[col]["Todos los espacios"] = lista
+		lista = []"""
+
+	return df
+	
+def rm_nan(df, columns):
+	'''
+	Método que remueve los valores NAN insertados por python.
+	'''
+	def remove(dato):
+		dato = str(dato)
+		if dato == "NAN" or dato == "nan":	
+			dato = ""
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(
+			lambda x: remove(x)
+		)
+	return df
+
+def rm_especial_chars(df, columns, exclude = None ):
+	"""
+	Método que elimina caracteres especiales, a excepción del espacio, de una serie de columnas dada.
+	:param df: DataFrame a utilizar.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	:params exclude: Lista de valores a omtir, los cuales no serán removidos.
+	"""
+	lista = []
+	def rm_chars(dato):
+	# Método interno de evaluación y reemplazo por dato.
+		dato = str(dato)
+		#Bandera que indica si tiene carácteres especiales.
+		flag = False
+		if "CARR" in dato:
+			lista.append(0)
+			return dato
+			
+		for c in dato:
+			if  exclude is None:
+				if not c == " " and not c.isalpha() and not c.isdigit():
+				
+					#Si encuentra uno se cambia la bandera
+					flag = True
+					dato = dato.replace(c, "")
+			else :
+				if not c in exclude and not c == " " and not c.isalpha() and not c.isdigit():
+				
+					#Si encuentra uno se cambia la bandera
+					flag = True
+					dato = dato.replace(c, "")
+		if flag:
+			lista.append(1)
+		else:
+			lista.append(0)	
+		return dato
+	
+	# Aplicación de reglas por cada columna dada.
+	for col in columns:
+		df[col] = df[col].apply(lambda x: rm_chars(x))
+		sabana[col]["Special Chars"] = lista
+		lista = []
+  
+	return df
+
+def upper_col(df, columns):
+	"""
+	Método que elimina pone en mayusculas los dato de una serie de columnas.
+	:param df: DataFrame a utilizar.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	"""
+	lista = []
+	def upper_data(dato):
+	# Método interno de evaluación y reemplazo por dato
+		dato = str(dato)
+		if not dato.isupper() and not dato.isnumeric() and dato != "" and dato!="NAN" and dato!="nan":
+			lista.append(1)
+			dato = dato.upper()
+		else:
+			lista.append(0)
+		return dato
+	for col in columns:
+		df[col] = df[col].apply(lambda x: upper_data(x))
+		sabana[col]["Upper"] = lista
+		lista = []
+	return df
+
+def rm_accents(df, columns):
+	"""
+	Método que elimina y reemplaza los acentos en una serie de columnas.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (List): Lista de columnas en donde se aplica la regla.
+	Returns:
+		Retorna el DataFrame modificado.
+	"""
+	lista = []
+	def accents(dato):
+		dato = str(dato)
+		rm_dato = unidecode.unidecode(dato)
+				
+		if dato == rm_dato or dato == "" or dato=="NAN" or  dato=="nan":
+			lista.append(0)
+		else:
+			lista.append(1)
+			
+		return rm_dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: accents(x))
+		sabana[col]["Accents"] = lista
+		lista = []
+	return df
+
+def rm_by_len(df, columns, length):
+	'''
+	Método que remueve valores de acuerdo a una longitud máxima.
+	:param columns: Lista de columnas en donde aplicar la rutina.
+	:param length: Longitud máxima para validar los datos.
+	'''
+	lista = []
+	def check_len(dato):
+		dato = str(dato)
+		if len(dato)<length:
+			dato = ""
+			lista.append(1)
+		else :
+			lista.append(0)
+		return dato
+		
+	for col in columns:
+		df[col] = df[col].apply(lambda x: check_len(x))
+		sabana[col]["Check Len"] = lista
+		lista = []
+	return df
+
+def rm_one_char(df, columns):
+	"""
+	Método que elimina valores de longitud 1.
+	:param df: DataFrame a utilizar.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	"""
+	lista = []
+	def remove_char(dato):
+		dato = str(dato)
+		#Se evalua la longitud.
+		if len(dato) == 1:
+			lista.append(1)
+			dato = ""
+		else:
+			lista.append(0)
+		return dato
+	
+	for col in columns:
+		df[col] = df[col].apply(lambda x: remove_char(x))
+		sabana[col]["1 char"] = lista
+		lista = []
+	return df
+
+def is_float(dato):
+	try:
+		float(dato)
+		return True
+	except:
+		return False
+
+def replace_char(df, columns, values, sencond_val):
+	'''
+	Método que busca y reemplaza valores por otro seleccionado.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	:param values: Lista de valores a reemplazar.
+	:param second_val: Valor por el que serán reemplazados los valores anteriores.
+	'''
+	lista = []
+	def rep(dato):
+		dato = str(dato)
+		flag = False
+		for value in values:
+			if value in dato:
+				flag = True
+				dato = dato.replace(value, sencond_val)
+		if flag:
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: rep(x))
+		sabana[col]["Replace char"] = lista
+		lista = []
+	return df
+
+def rm_floats(df, columns):
+	'''
+	Método que remueve valores flotantes de una lista de columnas.
+	'''
+	lista = []
+	def check_floats(dato):
+		dato = str(dato)
+		if (not dato.isnumeric() and is_float(dato)) or "." in dato:
+			dato = ""
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato
+	
+	for col in columns:
+		df[col] = df[col].apply(lambda x: check_floats(x))
+		sabana[col]["Is Float"] = lista
+		lista = []
+	return df
+
+def rm_parentheses(df, columns):
+	'''
+	Método que remueve cadenas que se encuentren entre paréntesis en las columnas señaladas.
+	'''
+	lista = []
+	def rm_par(dato):
+		dato = str(dato)
+		if "(" in dato and ")" in dato:
+			lista.append(1)
+			dato = re.sub(r'\([^)]*\)', '', dato)
+		else :
+			lista.append(0)
+		return dato
+	for col in columns:
+		df[col] = df[col].apply(lambda x: rm_par(x))
+		sabana[col]["parentheses"] = lista
+		lista = []
+	return df
+
+def rm_alpha(df, columns):
+	"""
+	Método que elimina caracteres alfabéticos de un dato.
+	:param df: DataFrame a utilizar.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	"""
+	lista = []
+	def rm_chars(dato):
+	# Método interno que realiza la evaluación por dato.
+		dato = str(dato)
+		# Bandera que indica si se aplica la regla o no.
+		flag = False
+		numbers = dato.split(",")
+
+		if dato == "" or dato=="NAN" or dato=="nan":
+			lista.append(0)
+			return dato
+
+		if len(numbers)>1:
+			flag = True
+			dato = numbers[0]
+		
+		dato = clean_first(dato)
+		numbers = dato.split()
+		dato = numbers[0] if len(numbers)>0 else dato
+			
+		if flag:
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: rm_chars(x))
+		sabana[col]["Remove Alpha"] = lista
+		lista = []
+	return df
+
+def rep_nulls(df, columns, val):
+	"""
+	Método que reemplaza valores nulos encontrados en una columna.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (list): Lista de columnas en donde se aplica la regla.
+		val (string): Valor por el que se reemplazan los nulos.
+	"""
+	lista = []
+	def replace_nulls(dato, val):
+		if dato == "":
+			lista.append(1)
+			dato = val
+		else:
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: replace_nulls(x, val)) 
+		sabana[col]["Replace Nulls"] = lista
+		lista = []
+	return df
+
+def check_email(df, columns):
+	"""
+	Método que elimina correos encontrados que no sigan cierta estructura.
+	Args:
+		df (DataFrame): DataFrame a editar.
+		columns (List):	Lista a columnas en donde se aplica la regla. 
+	Returns:
+		Retorna el DataFrame modificado
+	"""
+	
+	lista = []
+	def check(dato):
+		dato = str(dato)
+		dato = dato.split('/')[0] if "/" in dato else dato.split(';')[0]
+		if "/" in dato:
+			dato = dato.split('/')[0]
+		elif ";" in dato:
+			dato = dato.split(';')[0]
+		elif "," in dato:
+			dato = dato.split(',')[0]
+		else:
+			dato = dato.split(" ")[0]
+
+		regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+		if not (re.fullmatch(regex, dato) ):
+			lista.append(1)
+			dato = ""
+		else:
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: check(x)) 
+		sabana[col]["Estructura Email"] = lista
+		lista = []
+
+	return df
+	
+def set_year(df, columns):
+	"""
+	Método que valida y reemplaza los valores de año fuera de rango.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (Lista): Lista de columnas en donde se aplica la regla.
+	Returns:
+		Retorna el DataFrame modificado. 
+	"""
+	lista = []
+	def adjust(dato):
+		year = date.today().year
+		if int(year) < int(dato):
+			lista.append(1)
+			dato = year
+		elif int(dato) < 1900:
+			dato = 1900
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato
+	for col in columns:
+		df[col] = df[col].apply(lambda x: adjust(x)) 
+		sabana[col]["Ajuste año"] = lista
+		lista = []
+	return df
+
+def set_month(df, columns):
+	"""
+	Método que valida y reemplaza los valores de mes fuera de rango.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (Lista): Lista de columnas en donde se aplica la regla.
+	Returns:
+		Retorna el DataFrame modificado. 
+	"""
+	lista = []
+	def adjust(dato):
+		if int(dato) > 12:
+			lista.append(1)
+			dato = 12
+		elif int(dato) < 1:
+			lista.append(1)
+			dato = 1
+		else:
+			lista.append(0)
+		#Dar formato de dos digitos.
+		dato = ("{:02d}".format(int(dato)))
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: adjust(x)) 
+		sabana[col]["Ajuste mes"] = lista
+		lista = []
+	return df
+		
+def set_day(df, columns):
+	"""
+	Método que valida y reemplaza los valores de día fuera de rango.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (Lista): Lista de columnas en donde se aplica la regla.
+	Returns:
+		Retorna el DataFrame modificado. 
+	"""
+	lista = []
+	def adjust(dato):
+		if int(dato) > 31:
+			lista.append(1)
+			dato = 31
+		elif int(dato) < 1:
+			lista.append(1)
+			dato = 1
+		else:
+			lista.append(0)
+		# Dar formato de dos digitos.
+		dato = ("{:02d}".format(int(dato)))
+		return dato
+	
+	for col in columns:
+		df[col] = df[col].apply(lambda x: adjust(x))
+		sabana[col]["Ajuste dia"] = lista
+		lista = []
+	return df
+
+def concat_year(df):
+	# Método que concatena los valores de fecha en una sola columna.
+	df["CreationDate"] = df["Clanal"].astype(str) + df["Clmeal"].astype(str) + df["Cldial"].astype(str)
+	return df
+
+def num_to_bool(df, columns):
+	"""
+	Método reemplaza valores numericos (0, 1) por valores booleanos.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (Lista): Lista de columnas en donde se aplica la regla.
+	Returns:
+		Retorna el DataFrame modificado. 
+	"""
+	lista = []
+	def transform(dato):
+		if int(dato) == 1:
+			lista.append(1)
+			dato = True
+		elif int(dato) == 0:
+			lista.append(1)
+			dato = False
+		else: 
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: transform(x))
+		sabana[col]["Num to bool"] = lista
+		lista = []
+	return df
+
+def val_cat(df, columns, catalogo):
+	"""
+	Método que valida y reemplaza los valores que se encuentren fuera de un catálogo dado.
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		columns (Lista): Lista de columnas en donde se aplica la regla.
+		catalogo (Lista): Catálogo que contiene los valores para validar la columna.
+	Returns:
+		Retorna el DataFrame modificado. 
+	"""
+	lista = []
+	def validar(dato):
+		if not dato in catalogo:
+			lista.append(1)
+			dato = ""
+		else:
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: validar(x))
+		sabana[col]["Val Catalogo"] = lista
+		lista = []
+	return df
+
+def rm_emails(df, columns):
+	'''
+	Método que busca y elimina correos electrónicos de una lista de columnas.
+	'''
+	lista = []
+	def rm_mail(dato):
+		if "@" in dato or ".com" in dato:
+			lista.append(1)
+			dato = ""
+		else : 
+			lista.append(0)
+		return dato
+
+	for col in columns:
+		df[col] = df[col].apply(lambda x: rm_mail(x))
+		sabana[col]["Télefono no válido"] = lista
+		lista = []
+	return df
+
+def split_ext(df, col_tel, col_ext):
+	#Método interno solicitado.
+	lista = []
+	def get_ext(row):
+		dato = str(row[col_tel])
+		dato = dato.upper()
+		ext = ""
+		if "EXT" in dato:
+			lista.append(1)
+			tels = dato.split("EXT")
+			if len(tels) > 1:
+				ext = tels[1]
+				tel = tels[0]
+				row[col_ext] = ext
+				row[col_tel] = tel
+			else :
+				ext = tels[0]
+				row[col_ext] = ext
+				row[col_tel] = ""
+		elif "XT" in dato:
+			lista.append(1)
+			tels = dato.split("XT")
+			if len(tels) > 1:
+				ext = tels[1]
+				tel = tels[0]
+				row[col_ext] = ext
+				row[col_tel] = tel
+			else :
+				ext = tels[0]
+				row[col_ext] = ext
+				row[col_tel] = ""
+		else:
+			lista.append(0)
+
+		return row
+
+	df = df.apply(lambda row: get_ext(row), axis = 1)
+	sabana[col_tel]["Extensión extraída"] = lista
+	sabana[col_ext]["Extensión en tel."] = lista
+	lista = []
+	return df		
+
+def save_sabana(df, nombre, keys = []):
+	"""
+	Método que procesa y guarda la sabana creada a partir de las rutinas realizadas.
+	Args:
+		df (DataFrame): DataFrame a procesar.
+		nombre (str): Cadena que indica nombre del archivo a guardar (xlsx).
+	"""
+	global df_copy
+	pivot_keys = df[keys].copy()
+
+	for key in keys:
+		df.drop(key, axis=1, inplace=True)
+		df_copy = df_copy.drop(key, axis=1)
+		total_cols.remove(key)
+
+	writer = pd.ExcelWriter(nombre, engine="xlsxwriter")
+	df_rules = pd.DataFrame()
+	result = pd.DataFrame()
+
+
+	cont = 0
+	pos = 0
+	for key in sabana.keys():
+		if key not in keys:
+			df_rules.insert(pos, total_cols[cont] + " - Original", df_copy[total_cols[cont]])
+			df_rules.insert(pos+1, total_cols[cont] + " - Clean", df[total_cols[cont]])
+			values = sabana[key].keys()
+			for val in values:
+				df_rules.insert(pos+2, val, sabana[key][val])
+				df_rules[val] = sabana[key][val]
+
+
+			pos += 3
+			cont += 1
+
+	result = pd.concat([pivot_keys, df_rules], axis=1, join="inner")
+	result.to_excel(writer, index = False, sheet_name = "sabana")
+
+	writer.save()
+
+def has_numbers(inputString):
+    return bool(re.search(r'\d', inputString))
+
+def count_nums(dato):
+	numbers = sum(c.isdigit() for c in dato)
+	return numbers
+
+def format_masks(df, col):
+	lista =[]
+	def format(dato):
+		dato = str(dato)
+		if not has_numbers(dato):
+			dato = ""
+			return dato
+		
+		dato = dato.upper()
+		dato = dato.replace("\\", "-")
+		dato = dato.replace("/", "-")
+		dato = dato.replace("HRS.", "")
+		dato = dato.replace("HRS", "")
+		dato = dato.replace("HR.", "")
+		dato = dato.replace("HR", "")
+		dato = dato.replace("DE", "")
+		#dato = dato.replace("Y", "A")
+		dato = dato.replace("P.M.", "")
+		dato = dato.replace("A.M", "")
+		dato = dato.replace("PM", "")
+		dato = dato.replace("AM", "")
+		dato = dato.replace("P:M:", "")
+		dato = dato.replace("A:M:", "")
+
+		dato = dato.replace("-", ":") if dato.count("-") == 1 and len(dato) == 3 else dato 
+		dato = dato.replace("-", "A") if dato.count("-") == 1 and len(dato) >= 10 else dato 
+		dato = dato.replace(".", ":")
+		dato = dato.replace(";", ":")
+
+	
+		return dato
+
+	df[col] = df[col].apply(lambda x: format(x))
+	return df
+
+def rm_except(df, col, exclude):
+	'''
+	Método que elimina los carácteres de un dato en una columna, exceptuando los señalados.
+	'''
+	def remove(dato):
+		dato = str(dato)
+		if not dato == "" and str(dato[0]).isalpha():
+			dato = dato.replace(dato[0], "")
+		for c in dato:
+			if c.isalpha() and not c in exclude:
+				dato = dato.replace(c, "")
+		return dato
+
+	df[col] = df[col].apply(lambda x: remove(x))
+	return df
+
+def get_mask(dato):
+	dato = str(dato)
+	mask='' 
+	for c in dato:
+		if c.isdigit():
+			mask += 'N'
+		elif not c.isprintable():
+			mask += 'H'
+		elif c.isalpha():
+			mask += 'A'
+		else:
+			mask += c
+	return mask
+
+def masks(df, col):
+	df["Mask"] = df[col].apply(lambda x: get_mask(x))
+	return df
+
+def clean_fst_word(df, col):
+	lista = []
+	def rm_second(dato):
+		dato = str(dato)
+		if dato == "FALTA R.F.C.":
+			lista.append(0)
+			return dato
+		words = dato.split()
+		if len(words) > 1:
+			dato = words[0]
+			lista.append(1)
+		else:
+			lista.append(0)
+		return dato
+
+	df[col] = df[col].apply(lambda x: rm_second(x))
+	sabana[col]["Remover segundo"] = lista
+	lista = []
+	return df
+	
+def clean_first(dato):
+	if not dato == "" and (not str(dato[0]).isnumeric()):
+		dato = dato[1:]
+		return clean_first(dato)
+	elif not dato == "" and (not str(dato[-1]).isnumeric()):
+		dato = dato[:-1]
+		return clean_first(dato)
+	else:
+		return dato
+
+def format_hours(df, col):
+	"""
+	Función que, en base a la máscara, cambia la estructura de horas y da formato.
+	"Abandonad toda esperanza, quienes aquí entráis"
+	Args:
+		df (DataFrame): DataFrame a utilizar.
+		col (str): Nombre de columna que contiene las horas
+	"""
+	lista = []
+	masks = []
+	masks_origen = []
+	def format(dato):
+		dato = str(dato)
+		dato = clean_first(dato)
+		dato = re.sub(' +', " ", dato)
+		mask = get_mask(dato)
+		masks_origen.append(mask)
+		########################
+		if mask == "N-NN A NN-NN":
+			if "A" in dato:
+				dato = "0"+dato 
+				dato = dato.replace("-", ":")
+			elif "Y" in dato:
+				rangos = dato.split(" Y ")
+				dato = "0" + dato[0] + ":00 A " + rangos[1].split("-")[1] + ":00"
+				
+		elif mask == "N:NN A NN:NN":
+			dato = "0"+dato
+		elif mask == "NN-NN A NN-NN":
+			dato = dato.replace("-", ":")
+		elif mask == "N:NN A N:NN":
+			rangos = dato.split(" A ")
+			rangos[0] = "0" + rangos[0]
+			rangos[1] = "0" + rangos[1]
+			dato = " A ".join(rangos)
+		elif mask == "N A NN":
+			dato = "0" + dato
+			rangos = dato.split(" A ")
+			rangos[0] += ":00"
+			rangos[1] += ":00"
+			dato = " A ".join(rangos)
+		elif mask == "N A NN:NN":
+			dato = "0" + dato
+			rangos = dato.split(" A ")
+			rangos[0] += ":00"
+			dato = " A ".join(rangos)
+		elif mask == "N-NN A NN-NN:NN":
+			rangos = dato.split(" A ")
+			dato ="0" + rangos[0][0] + ":00 A "
+			dato += rangos[1].split("-")[1]
+		elif mask == "N:NN A NN":
+			dato = "0" + dato
+			dato += ":00"
+		elif mask == "N A N A N A N":	
+			dato = dato[0] + " A " + dato[-1] #Ej. 2 a 6
+			rangos = dato.split(" A ")
+			dato = "0" + rangos[0] + ":00 A " + "0" + rangos[1] + ":00"
+		elif mask == "N:NN : NN:NN":
+			rangos = dato.split(" : ")
+			dato = " A ".join(rangos)
+			dato = "0" + dato
+		elif mask == "N:NN NN:NN":
+				dato = "0" + dato
+				dato = " A ".join(dato.split())
+		elif mask == "NN A NN":
+			rangos = dato.split(" A ")
+			dato = rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "N A N":
+			rangos = dato.split(" A ")
+			dato = "0" + rangos[0] + ":00 A 0" + rangos[1] + ":00"
+		elif mask == "N-NN NN-NN":
+			rangos = dato.split(" ")
+			dato = "0" + rangos[0][0] + ":00 A " + rangos[1].split("-")[1] + ":00"
+		elif mask == "N-N A N-N":
+			dato = "0" + dato[0] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN:NN A N:NN":
+			rangos = dato.split(" A ")
+			dato = rangos[0] + " A 0" + rangos[1]
+		elif mask == "N A NN :":
+			dato = dato.replace(" :", "")
+			rangos = dato.split(" A ")
+			dato = "0" + rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "N-NN A NN:NN-NN":
+			rangos = dato.split(" A ")
+			dato = "0" + dato[0] + ":00 A " + rangos[1].split("-")[1] + ":00"
+		elif mask == "NN:NN NN:NN":
+			dato = dato.replace(" ", " A ")
+		elif mask == "NN NN-NN":
+			rangos = dato.split(" ")[1].split("-")
+			dato = rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "NN-NN":
+			rangos = dato.split("-")
+			dato = rangos[0] + ":00 A " + rangos[1]	+ ":00"
+		elif mask == "NAN N A N" or  mask == "N A NNAN A N"  or  mask == "N-N N-N" or mask == "N A NAN A N" or mask == "N-NN A N-N":
+			dato = "0" + dato[0] + ":00 A 0" + dato[-1] + ":00" 
+		elif mask == "N ANN":
+			dato = "0" + dato[0] + ":00 A " + dato.split("A")[1] + ":00"
+		elif mask == "N NN A N NN":
+			rangos = dato.split(" A ")
+			dato = "0" + str(rangos[0]).replace(" ", ":") + " A 0" + str(rangos[1]).replace(" ", ":")
+		elif mask == "NNNNN NNANN" or mask == "NNNN NNANN":
+			rangos = dato.split(" ")[1].split("A")
+			dato = rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "NNNN A NN:NN":
+			dato = dato[:2] + ":" + dato[2:]
+		elif mask == "NNNN-NNNN":
+			dato = dato[:2] + ":" + dato[2:7] + ":" + dato[7:]
+			dato = dato.replace("-", " A ")
+		elif mask == "NNNN - NNNN":
+			dato = dato[:2] + ":" + dato[2:9] + ":" + dato[9:]
+			dato = dato.replace("-", "A")
+		elif mask == "NNNN A NNNN":
+			dato = dato[:2] + ":" + dato[2:9] + ":" + dato[9:]
+		elif mask == "NNN A NNNN":
+			dato =  "0" + dato
+			dato = dato[:2] + ":" + dato[2:9] + ":" + dato[9:]
+		elif mask == "NNN A NN:NN":
+			dato =  "0" + dato
+			dato = dato[:2] + ":" + dato[2:]
+		elif mask == "NNN A NN":
+			dato = "0" + dato +":00"
+			dato = dato[:2] + ":" + dato[2:]
+		elif mask == "NNN A NNN":
+			dato = "0" + dato[:6] + "0" + dato[6:]
+			dato = dato[:2] + ":" + dato[2:9] + ":" + dato[9:]
+		elif mask == "NNN NNANN"	:
+			rangos = dato.split()[1].split("A")
+			dato = rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "NNN-NN NN-NN":
+			rangos = dato.split()[1].split("-")
+			dato = rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "NNNA NN:NN":
+			dato = "0" + dato[0] + ":00 A " + dato.split()[1]
+		elif mask == "NNNAN:NNNAN:NN":
+			dato = "0" + dato[0] + ":00 A 0" + dato.split("A")[-1] 
+		elif mask == "NNN: A NN:NN":
+			dato = "0" + dato[:1] + ":" + dato[1:2] + " A " + dato.split(" A " )[1]
+		elif mask == "NNN NNNN":
+			dato = "0" + dato[0] + ":" + dato[1:3] + " A " + dato[4:6] + ":" + dato[6:]
+		elif mask == "NN-NN NN-NN":
+			rangos = dato.split()[1].split("-")
+			dato = rangos[0] + ":00 A " + rangos[1] + ":00"
+		elif mask == "NN:NNA NN:NN":
+			dato = dato.replace("A", " A")
+		elif mask == "NN ANN:NN":
+			dato = dato.replace("A", "A ")
+			dato = dato[:2] + ":00" + dato[2:]
+		elif mask == "NN:NN A NN":
+			dato = dato + ":00"
+		elif mask == "NN:NNANNNN":
+			dato = dato[:8] + ":" + dato[8:]
+			dato = dato.replace("A", " A ")
+		elif mask == "NN:NN A NNANN":
+			dato = dato[:10] + ":" + dato[11:]
+		elif mask == "NNA NN":
+			dato = dato.replace("A", ":00 A")
+			dato = dato + ":00"
+		elif mask == "NN NNANN":
+			dato = dato.split()[1]
+			dato = dato.replace("A", ":00 A ")
+			dato = dato + ":00"
+		elif mask == "NN A NN:NN":
+			dato = dato.replace(" A", ":00 A")
+		elif mask == "NN:NNANN:NN":
+			dato = dato.replace("A", " A ")
+		elif mask == "NN - NN":
+			dato = dato.replace(" - ", ":00 A ")
+			dato = dato + ":00"
+		elif mask == "NN:NNANN:NN":
+			dato = dato.replace("A", " A ")
+		elif mask == "NN:NN A NN:N":
+			dato = dato + "0"
+		elif mask == "NN:N A NN:NN":
+			dato = dato.replace(" A", "0 A")
+		elif mask == "NNANN A NN:NN":
+			dato = dato.replace("A", ":")
+			dato = dato.replace(" : ", " A ")
+		elif mask == "NN NN":
+			dato = dato.replace(" ", ":00 A ")
+			dato = dato + ":00"
+		elif mask == "NN:NNA N:NN":
+			dato = dato.replace("A ", " A 0")
+		elif mask == "NN:NN A N:NNN":
+			dato = dato[:-1]
+			dato = dato.replace("A ", "A 0")
+		elif mask == "NNANN NN A NN":
+			dato = dato[:2] + ":00 A " + dato.split(" A ")[1] + ":00"
+		elif mask == "NN:NN-NNNN-NN":
+			rangos = dato.split("-")[2]
+			dato = dato[:5] + " A " + rangos + ":00"
+		elif mask == "NN:NNAN:NN":
+			dato = dato.replace("A", " A 0")
+		elif mask == "NN:NN A: NN:NN":
+			dato = dato.replace("A:", "A")
+		elif mask == "NN:NN ANN:NN":
+			dato = dato.replace("A", "A ")
+		elif mask == "NN:NN N:NN":
+			dato = dato.replace(" ", " A 0")
+		elif mask == "NN: A NN":
+			dato = dato.replace(":", ":00")
+			dato = dato + ":00"
+		elif mask == "NN- NN NN-NN":
+			dato = dato[:2] + ":00 A " + dato.split("-")[2] + ":00"
+		elif mask == "NN-NN NNN-NN":
+			dato = dato[:2] + ":00 A " + dato.split("-")[2] + ":00"
+		elif mask == "NNANN NN:NN":
+			dato = dato.split()[0]
+			dato = dato.replace("A", ":00 A ")
+			dato = dato + ":00"
+		elif mask == "NN-N:NN N-N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN-N NN-NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN A NN NNANN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN A N:NN":
+			dato = dato.replace(" A ", ":00 A 0")
+		elif mask == "NN A NAN:NN A N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN:NNAN::N:A:N":
+			dato = dato[:5] + " A 0" + dato[-1] + ":00"
+		elif mask == "NN:NNAN: N:A:N":
+			dato = dato[:5] + " A 0" + dato[-1] + ":00"
+		elif mask == "NN:NN:A:NN:A:N":
+			dato = dato[:5] + " A 0" + dato[-1] + ":00"
+		elif mask == "NN:NN:AN:N:A:N":
+			dato = dato[:5] + " A 0" + dato[-1] + ":00"
+		elif mask == "NN:NN NNANN:N":
+			dato = dato.split()[1]
+			dato = dato.replace("A", ":00 A ")
+			dato = dato + "0"
+		elif mask == "NN:NN NNANN":
+			dato = dato.split()[1]
+			dato = dato.replace("A", ":00 A ")
+			dato = dato + ":00"
+		elif mask == "NN:NN A NN:ANN":
+			dato = dato.replace("A", "").replace("  ", " A ")
+		elif mask == "NN:NN A NN:NNNN":
+			dato = dato[:-2]
+		elif mask == "NN:NN A NN:NNN":
+			dato = dato[:-1]
+		elif mask == "NN:NN A NNNN":
+			dato = dato[:10]	+ ":" + dato[10:]
+		elif mask == "NN:NN ANNANN":
+			dato = dato.replace("A", ":")
+			dato = dato.replace(" :", " A ")
+		elif mask == "NN:N A NN:N":
+			dato = dato.replace(" A ", "0 A ")
+			dato = dato + "0"
+		elif mask == "NN-NN N-N":
+			rangos = dato.split("-")
+			dato = rangos[0] + ":00 A 0" + rangos[-1] + ":00"
+		elif mask == "NNA NN NN A NN" or mask == "NNANN NNANN" or mask == "NNAN NNA NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN: A N":
+			dato = dato.replace(": A ", ":00 A 0") + ":00"
+		elif mask == "NN:A:NN NN:A:NN":
+			dato = dato.split()[0].replace(":A:", ":00 A ") + ":00"
+		elif mask == "NN:A NN:NN":
+			dato = dato.replace(":A ", ":00 A ")
+		elif mask == "NN::NN A NN:NN":
+			dato = dato.replace("::", ":")
+		elif mask == "NN: A NN:NN":
+			dato = dato.replace(": ", ":00 ")
+		elif mask == "NN: NN A NN:NN":
+			dato = dato.replace(": ", ":")
+		elif mask == "NN: NN A N:NN":
+			dato = dato.replace(": ", ":")
+			dato = dato.replace(" A ", " A 0")
+		elif mask == "NN:NN-NN NN-NN":
+			dato = dato.split()[0].replace("-", " A ") + ":00"
+		elif mask == "NN:NN-N N-N":
+			dato = dato.split()[0].replace("-", " A 0") + ":00"
+		elif mask == "NN:NNANNNN NN":
+			dato = dato.split()[0]
+			dato = dato[:8] + ":" + dato[8:]
+			dato = dato.replace("A", " A ")
+		elif mask == "NN:NN ANN":
+			dato = dato.replace(" A", " A ") + ":00"
+		elif mask == "NN:N A NNANN":
+			dato = dato.replace("A", ":").replace(" : ", "0 A ")
+		elif mask == "NN-NN NN-:NN" or mask == "NN-NN NN:NN-N":
+			dato = dato.split()[0]
+			dato = dato.replace("-", ":00 A ") + ":00"
+		elif mask == "NN:A:N::N:A:N" or mask == "NN:A N N A N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN:: A NN:NN":
+			dato = dato.replace("::", ":00")
+		elif mask == "NNA:NN A NN:NN":
+			dato = dato.replace("A:", ":")
+		elif mask == "NNA A NN:NN":
+			dato = dato.replace("A A ", ":00 A ")
+		elif mask == "NN-NN- NN-NN":
+			dato = dato.split()[1]
+			dato = dato.replace("-", ":00 A ") + ":00"
+		elif mask == "NNANN":
+			dato = dato.replace("A", ":00 A ") + ":00"
+		elif mask == "NN-NNN NN-NN":
+			dato = dato.split()[1]
+			dato = dato.replace("-", ":00 A ") + ":00"
+		elif mask == "NN-NN NN-NN:N":
+			dato = dato + "0"
+			dato = dato[:2] + ":00 A " + dato[-5:]
+		elif mask == "NN-NN NN -NN" or mask == "NNANN NN NN":
+			dato = dato[:2] + ":00 A " + dato [-2:] + ":00"
+		elif mask == "NN-NN N-NN:NN":
+			dato = dato[:2] + ":00 A " + dato[-5:]
+		elif mask == "NNANN N A N" or mask == "NN-NN:NN NN-N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NNANN NN":
+			dato = dato.split()[0]
+			dato = dato.replace("A", ":00 A ") + ":00"
+		elif mask == "NN-N":
+			dato = dato.replace("-", ":00 A 0") + ":00"
+		elif mask == "NN-N:NN":
+			dato = dato.replace("-", ":00 A 0")
+		elif mask == "NN-N N-N":
+			dato = dato.split()[0]
+			dato = dato.replace("-", ":00 A 0") + ":00"
+		elif mask == "NNAN:NN N A N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN-N NN-NN:NN":
+			dato = dato[:2] + ":00 A " + dato[-5:]
+		elif mask == "NN-N A NN-NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN-N N-NN:NN":
+			dato = dato[:2] + ":00 A " + dato[-5:]
+		elif mask == "NNANNA NN:NN":
+			dato = dato.replace("A", ":")
+			dato = dato.replace(": ", " A ")
+		elif mask == "NN-NN ANN-NN":
+			dato = dato.replace("-", ":").replace(" A", " A ")
+		elif mask == "NNNN A NN":
+			dato = dato + ":00"
+			dato = dato[:2] + ":" + dato[2:]
+		elif mask == "NN AN:NN":
+			dato = dato.replace(" A", ":00 A 0")
+		elif mask == "NN N":
+			dato = dato.replace(" ", ":00 A 0") + ":00"
+		elif mask == "NN N:NN":
+			dato = dato.replace(" ", ":00 A 0")
+		elif mask == "NN A A N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN A NNNN":
+			dato = dato[:-2] + ":" + dato[-2:]
+			dato = dato.replace(" A", ":00 A")
+		elif mask == "NN A NNN":
+			dato = dato[:-2] + ":" + dato[-2:]
+			dato = dato.replace(" A ", ":00 A 0")
+		elif mask == "NN A NN NN A NN" or mask == "NN A NN NN ANN" or mask == "NN A NNANN A NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN A NN NN NN":
+			dato = dato[:7]
+			dato = dato.replace(" A ", ":00 A ") + ":00"
+		elif mask == "NN A NN N":
+			dato = dato[:-2]
+			dato = dato.replace(" A ", ":00 A ") + ":00"
+		elif mask == "NN A NN NN A NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN A N":
+			dato = dato.replace(" A ", ":00 A 0") + ":00"
+		elif mask == "NN A N N A N":
+			dato = dato[:2] + ":00 A 0" + dato[-1] + ":00"
+		elif mask == "NN ANN":
+			dato = dato.replace(" A", ":00 A ") + ":00"
+		elif mask == "NN ANN:N NNANN" or mask == "NN ANN NNANN" or mask == "NN - NN NN-NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN -NN":
+			dato = dato.replace(" -", ":00 A ") + ":00"
+		elif mask == "NN -NN NN-NN" or mask == "NN -NN NN -NN":
+			dato = dato[:2] + ":00 A " + dato[-2:] + ":00"
+		elif mask == "NN NN NN A NN":
+			dato = dato[6:]
+			dato = dato.replace(" A", ":00 A") + ":00"
+		elif mask == "NN NN A NN NN":
+			dato = dato.replace(" ", ":").replace(":A:", " A ")
+		elif mask == "N:NN-NN":
+			dato = "0" + dato.replace("-", " A ") + ":00"
+		elif mask == "N:NN-NN NN-NN":
+			dato = "0" + dato[:4] + " A " + dato[-2:] + ":00"
+		elif mask == "N:NNA NN:NN":
+			dato = "0" + dato.replace("A ", " A ")
+		elif mask == "N:NN-NN-NN-NN":
+			dato = dato[:7]
+			dato = "0" + dato.replace("-", " A ") + ":00"
+		elif mask == "N:NNANN NN:NN":
+			dato = dato.split()[0]
+			dato = "0" + dato.replace("A", " A ") + ":00"
+		elif mask == "N:NNANN:NN":
+			dato = "0" + dato.replace("A", " A ")
+		elif mask == "N:NN-N N-N:NN":
+			dato = "0" + dato.split("-")[0] + " A 0" + dato.split("-")[-1]
+		elif mask == "N:NN-N:NN-N:NN":
+			rangos = dato.split("-")
+			dato = "0" + rangos[0] + " A 0" + rangos[1]
+		elif mask == "N:NN A ANN:NN":
+			dato = "0" + dato.replace(" A A", " A ")
+		elif mask == "N:NN A NNANN":
+			dato = "0" + dato.replace("A", ":").replace(" : ", " A ")
+		elif mask == "N:NN A NN:NN:NN":
+			dato = "0" + dato[:-3]
+		elif mask == "N:NN A NNANN":
+			dato = "0" + dato.replace("A", ":").replace(" : ", " A ")
+		elif mask == "N:NN A N":
+			dato = "0" + dato + ":00"
+			dato = dato.replace("A ", "A 0")
+		elif mask == "N:NN NNANN":
+			dato = dato.split()[1]
+			dato = dato.replace("A", ":00 A ") + ":00"
+		elif mask == "N:NN A NNANN":
+			dato = "0" + dato.replace("A", ":").replace(" : ", " A ")
+		elif mask == "N:NNN A NN:NN":
+			dato = "0" + dato[:2] + dato[3:]
+		elif mask == "NNN:NN A NN:NN":
+			dato = dato[1:]
+		elif mask == "NN::NN NN:NN":
+			dato = dato.replace("::", ":").replace(" ", " A ")
+		elif mask == "NN: NN:NN":
+			dato = dato.replace(": ", ":00 A ")
+		elif mask == "NN:NNNN:NN":
+			dato = dato[:5] + " A " + dato[5:]
+		elif mask == "NN:NNN A NN:NN":
+			dato = dato[:3] + dato[4:]
+		elif mask == "NN:NN A NN NN":
+			dato = dato.replace(" ", ":").replace(":A:", " A ")
+		elif mask == "NN:NN A N":
+			dato = dato.replace("A ", "A 0") + ":00"
+		elif mask == "NN:NN A NN::NN":
+			dato = dato.replace("::", ":")
+		elif mask == "NN:NN NN:N":
+			dato = dato.replace(" ", " A ") + "0"
+		elif mask == "NN:NN NN:NNN":
+			dato = dato[:-1].replace(" ", " A ")
+		elif mask == "NN:NN NN:NNN":
+			dato = dato.split()[0].replace("-", ":00 A ") + ":00"
+		elif mask == "NN A NN:NNN":
+			dato = dato[:-1].replace(" A", ":00 A")
+		elif mask == "NN A NN NN":
+			dato = dato[:-3].replace(" A ", ":00 A ") + ":00"
+		elif mask == "NN NNNN":
+			dato = dato[:5] + ":" + dato[5:]
+			dato = dato.replace(" ", ":00 A ")
+		elif mask == "N:NNN A NNA:NN":
+			dato = "0" + dato.replace("A:", ":")
+			dato = dato[:4] + dato[5:]
+		elif mask == "N:NNA ANN:NN":
+			dato = "0" + dato.replace("A A", " A ")
+		elif mask == "N:NNA AN:NN":
+			dato = "0" + dato.replace("A A", " A 0")
+		elif mask == "N:NNA NNNN":
+			dato = "0" + dato[:8] + ":" + dato[8:]
+			dato = dato.replace("A ", " A ")
+		elif mask == "N:NNA N:NN":
+			dato = "0"	+ dato.replace("A ", " A 0")
+		elif mask == "N:NNNN:NN":
+			dato = "0" + dato[:4] + " A " + dato[4:]
+		elif mask == "N:NN:A:N:NN":
+			dato = "0" + dato.replace(":A:", " A 0")
+		elif mask == "N:NN:A NN:NN":
+			dato = "0" + dato.replace(":A", " A")
+		elif mask == "N:NN-NN-NN":
+			dato = "0" + dato[:4] + " A " + dato[5:]
+			dato = dato.replace("-", ":")
+		elif mask == "NN-NN NN-NNNN":
+			dato = dato.split()[0].replace("-", ":00 A ") + ":00"
+		elif mask == "N:NN AA NN:NN":
+			dato = "0" + dato.replace("AA", "A")
+		elif mask == "N:NN A A NN:NN":
+			dato = "0" + dato.replace("A A", "A")
+		elif mask == "N:NN A A NN:NN":
+			dato = "0" + dato.replace("A :", "A ") + ":00"
+		elif mask == "N:NN A :NN:NN":
+			dato = "0" + dato.replace("A :", "A ")
+		elif mask == "N:NN A NNNN":
+			dato = "0" + dato[:9] + ":" + dato[9:]
+		elif mask == "N:NN A NNN":
+			dato = "0" + dato[:8] + ":" + dato[8:]
+			dato = dato.replace("A ", "A 0")
+		elif mask == "N:NN A NN:N":
+			dato = "0" + dato + "0" 
+		elif mask == "N:NN A NN:NNN":
+			dato = "0" + dato[:-1] 
+		elif mask == "N:NN A NN:NN N":
+			dato = "0" + dato[:-2]
+		elif mask == "N:NN A NNA:NN":
+			dato = "0" + dato.replace("A:", ":")
+		elif mask == "N:NN A NN::NN":
+			dato = "0" + dato.replace("::", ":")
+		elif mask == "N:NN A NN:ANN":
+			dato = "0" + dato.replace(":A", ":")
+		elif mask == "N:NN A NN: NN":
+			dato = "0" + dato.replace(": ", ":")
+		elif mask == "N:NN A :NN":
+			dato = "0" + dato.replace("A :", "A ") + ":00"
+		elif mask == "N:NN A NN NN":
+			dato = "0" + dato.replace(" ", ":").replace(":A:", " A ")
+		elif mask == "N:NN A NNANN:NN":
+			dato = "0" + dato[:-6] + ":00"
+		elif mask == "N:NN A NN NN:NN":
+			dato = "0" + dato[:-6] + ":00"
+		elif mask == "N:NN A NAN:NN":
+			dato = "0" + dato[:-5] + ":00"
+
+		mask = get_mask(dato)
+		masks.append(mask)
+		lista.append(1)
+
+		return dato
+
+
+	df[col] = df[col].apply(lambda x: format(x))
+	sabana[col]["Máscara Origen"] = masks_origen
+	sabana[col]["Máscara"] = masks
+	
+
+	lista = []
+	return df 
