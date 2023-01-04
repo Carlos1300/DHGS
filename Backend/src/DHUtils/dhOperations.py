@@ -398,100 +398,100 @@ def get_value_freq(datasources, mainParams, stepdict = None):
     dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
     return True, df_final
 
-def window_key(datasources, mainParams, stepdict = None):
-    dataframe = datasources['_main_ds']
-    dataframe["window_key"]=""
-    vocales = "AEIOUaeiou"
-    consonantes = "bcdfghjklmnpqrstwxyzñ"
-    consonantes = consonantes + consonantes.upper()
+# def window_key(datasources, mainParams, stepdict = None):
+#     dataframe = datasources['_main_ds']
+#     dataframe["window_key"]=""
+#     vocales = "AEIOUaeiou"
+#     consonantes = "bcdfghjklmnpqrstwxyzñ"
+#     consonantes = consonantes + consonantes.upper()
 
-    #Funnción que obtiene las vocales de un dato.
-    def get_vowels(dato, rango, repetir = True, actual=''):
-        res = actual
-        for c in dato[0:None]:
-            if (len(res) == rango):
-                    return res
-            if c in vocales:
-                if (not repetir and c not in res):
-                    res += c
-                if (repetir):
-                    res += c 
-        return res
+#     #Funnción que obtiene las vocales de un dato.
+#     def get_vowels(dato, rango, repetir = True, actual=''):
+#         res = actual
+#         for c in dato[0:None]:
+#             if (len(res) == rango):
+#                     return res
+#             if c in vocales:
+#                 if (not repetir and c not in res):
+#                     res += c
+#                 if (repetir):
+#                     res += c 
+#         return res
 
-    #Funnción que obtiene las consonantes de un dato.
-    def get_consonants(dato, rango, repetir = True, actual=''):
-        res = actual
-        for c in dato[0:None]:
-            if (len(res) == rango):
-                    return res
-            if c in consonantes:
-                if (not repetir and c not in res):
-                    res += c
-                if (repetir):
-                    res += c
-        return res 
+#     #Funnción que obtiene las consonantes de un dato.
+#     def get_consonants(dato, rango, repetir = True, actual=''):
+#         res = actual
+#         for c in dato[0:None]:
+#             if (len(res) == rango):
+#                     return res
+#             if c in consonantes:
+#                 if (not repetir and c not in res):
+#                     res += c
+#                 if (repetir):
+#                     res += c
+#         return res 
 
-    #Función que obtiene cualquier caractér de un dato en un rango especificado.
-    def get_any(dato, rango, repetir = True, actual=''):
-        res = actual
-        for c in dato[0:None]:
-            if (len(res) == rango):
-                return res
-            if (not repetir and c not in res):
-                res += c
-            if (repetir):
-                res += c
-        return res  
+#     #Función que obtiene cualquier caractér de un dato en un rango especificado.
+#     def get_any(dato, rango, repetir = True, actual=''):
+#         res = actual
+#         for c in dato[0:None]:
+#             if (len(res) == rango):
+#                 return res
+#             if (not repetir and c not in res):
+#                 res += c
+#             if (repetir):
+#                 res += c
+#         return res  
 
-    #Se obtienen los valores de los diccionarios
-    columnas = stepdict.get('columnas')
-    reglas = stepdict.get('reglas')
-    rangos = stepdict.get('rangos')
-    repetidos = stepdict.get('repetir')
+#     #Se obtienen los valores de los diccionarios
+#     columnas = stepdict.get('columnas')
+#     reglas = stepdict.get('reglas')
+#     rangos = stepdict.get('rangos')
+#     repetidos = stepdict.get('repetir')
 
-    #Se valida que la longitud de las listas de parámetros sea la misma.
-    is_valid = len(columnas) == len(reglas) and len(reglas) == len(rangos) and len(rangos) == len(repetidos)
-    #En caso de que no, se regresa False y el dataframe sin llaves.
-    if not is_valid:
-        return False, dataframe
+#     #Se valida que la longitud de las listas de parámetros sea la misma.
+#     is_valid = len(columnas) == len(reglas) and len(reglas) == len(rangos) and len(rangos) == len(repetidos)
+#     #En caso de que no, se regresa False y el dataframe sin llaves.
+#     if not is_valid:
+#         return False, dataframe
 
-    #Se recorre cada parámetro por regla
-    for x in range(len(columnas)):
-        columna = columnas[x]
-        selection = reglas[x]
-        rango = rangos[x]
-        repetir = repetidos[x]
+#     #Se recorre cada parámetro por regla
+#     for x in range(len(columnas)):
+#         columna = columnas[x]
+#         selection = reglas[x]
+#         rango = rangos[x]
+#         repetir = repetidos[x]
         
-        #Vocales
-        if ("A" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-                lambda x: get_any(x, rango, repetir = repetir)
-                ) 
-        elif ("V" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(lambda x: get_vowels(x,rango, repetir = repetir))
-        elif ("FV" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-                lambda x: get_vowels(x[1:], rango, actual=x[0], repetir=repetir)
-                ) 
-        elif ("FV2" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-                lambda x: get_vowels(x[1:], rango, actual=x[0], repetir=repetir)
-                ) 
+#         #Vocales
+#         if ("A" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
+#                 lambda x: get_any(x, rango, repetir = repetir)
+#                 ) 
+#         elif ("V" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(lambda x: get_vowels(x,rango, repetir = repetir))
+#         elif ("FV" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
+#                 lambda x: get_vowels(x[1:], rango, actual=x[0], repetir=repetir)
+#                 ) 
+#         elif ("FV2" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
+#                 lambda x: get_vowels(x[1:], rango, actual=x[0], repetir=repetir)
+#                 ) 
 
-        #Consonantes    
-        elif ("C" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(lambda x: get_consonants(x,rango, repetir = repetir))
+#         #Consonantes    
+#         elif ("C" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(lambda x: get_consonants(x,rango, repetir = repetir))
             
-        elif ("FC" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-                lambda x: get_consonants(x[1:], rango, actual=x[0], repetir=repetir)
-                )
+#         elif ("FC" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
+#                 lambda x: get_consonants(x[1:], rango, actual=x[0], repetir=repetir)
+#                 )
 
-        elif ("FC2" == selection):
-            dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-                lambda x: get_consonants(x[1:], rango,  actual=x[0], repetir=repetir)
-                ) 
-    return True, dataframe
+#         elif ("FC2" == selection):
+#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
+#                 lambda x: get_consonants(x[1:], rango,  actual=x[0], repetir=repetir)
+#                 ) 
+#     return True, dataframe
 
 def clean_html(datasources, mainParams, stepdict = None):
     #Se leen los valores de los parámetros.
@@ -708,7 +708,6 @@ sabana = {}
 df_copy = None
 catalogo = {}
 
-
 def set_cat(ruta):
 	global catalogo
 	catalogo = {}
@@ -880,8 +879,6 @@ def rm_by_comp(df, column):
 	df[column] = df[column].apply(lambda x: check(x))
 	sabana[column]["Ajuste AFNORE"] = lista
 	return df
-
-
 
 def trim_col(df, columns, all = False):
 	'''
