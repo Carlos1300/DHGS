@@ -1,6 +1,9 @@
 from threading import local
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from io import StringIO
+import json
+import pandas as pd
 
 """
 Archivo de Python encargado de ingresar a la base de datos de MongoDB así como establecer el proyecto en el que se trabajará. Igualmente,
@@ -232,4 +235,26 @@ def create_database(client, project):
         new_db['DataFlows'].delete_one({"test": 'test'})
         new_db['DataCleaned'].delete_one({"test": 'test'})
         
+        return True
+
+def register_count(collection):
+        
+        count = db_Proyecto[collection].count_documents({})
+        return count
+
+def join_chunk_data(collection):
+        full_df = None
+        first = True
+
+        for doc in db_Proyecto[collection].find({}, {'_id' : 0, 'schema': 1, 'data' : 1}):
+                if first == True:
+                        full_df = pd.read_json(StringIO(json.dumps(doc)), orient='table')
+                        first = False
+                else:
+                        df_loaded_chunk = pd.read_json(StringIO(json.dumps(doc)), orient='table')
+                        full_df = pd.concat([full_df, df_loaded_chunk])
+        return full_df
+
+def delete_chunk_data(collection):
+        db_Proyecto[collection].delete_many({})
         return True

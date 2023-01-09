@@ -17,8 +17,9 @@ import jellyfish
 import operator
 import unidecode
 from datetime import date
+import datetime
 import openpyxl
-import xlsxwriter
+# import xlsxwriter
 
 ## Todas las operaciones deben establecer el valor del diccionario '' a True o false
 ## OperaciónCorrecta = {Falso|Verdadero}
@@ -27,14 +28,21 @@ import xlsxwriter
 def load_source_main (datasources, mainParams, stepdict = None ):
     # _main_ds siempre hará referencia a la fuente de datos original donde se estará trabajando
     
-    """
-    Función para cargar los datos base o main que se utilizarán.
+	"""
+	Función para cargar los datos base o main que se utilizarán.
+
+	"""
     
-    """
-    
-    dictObj = dhRep.obtener_atributos_por_docid_prj('DataLoads', mainParams['source_id'], ['schema','data'] )
-    datasources['_main_ds'] = pd.read_json(StringIO(json.dumps(dictObj)), orient='table')
-    return True, datasources['_main_ds']
+	register_count = dhRep.register_count('DataLoads')
+	if register_count > 1:
+		datasources['_main_ds'] = dhRep.join_chunk_data('DataLoads')
+		datasources['chunks'] = register_count
+		return True, datasources['_main_ds']
+	else:
+		dictObj = dhRep.obtener_atributos_por_docid_prj('DataLoads', mainParams['source_id'], ['schema','data'] )
+		datasources['_main_ds'] = pd.read_json(StringIO(json.dumps(dictObj)), orient='table')
+		datasources['chunks'] = 1
+		return True, datasources['_main_ds']
 
 def save_source_main (datasources, mainParams, stepdict = None ):
     
@@ -43,11 +51,20 @@ def save_source_main (datasources, mainParams, stepdict = None ):
     
     """
     
-    doc =  json.loads(datasources['_main_ds'].to_json(orient='table'))
-    doc['_id'] = ObjectId(mainParams['source_id'])
-    dhRep.EliminarDocumentoProyecto (stepdict['collection'], doc)
-    dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
-    return True, datasources['_main_ds']
+    if datasources['chunks'] > 1:
+        df_chunks = dhUtilities.chunk_partitioning_save(datasources['_main_ds'], datasources['chunks'])
+        dhRep.delete_chunk_data(stepdict['collection'])
+        for chunk in df_chunks:
+            doc = json.loads(chunk.to_json(orient='table'))
+            dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
+        return True, datasources['_main_ds']
+
+    else:
+        doc =  json.loads(datasources['_main_ds'].to_json(orient='table'))
+        doc['_id'] = ObjectId(mainParams['source_id'])
+        dhRep.EliminarDocumentoProyecto (stepdict['collection'], doc)
+        dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
+        return True, datasources['_main_ds']
 
 def apply_synonymous(datasources, mainParams, stepdict = None):
     #operacion para aplicar sustitución por sinónimos a una columna origen y coloca el resultado en la columna destino

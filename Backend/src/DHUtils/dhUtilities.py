@@ -5,11 +5,37 @@ import pandas as pd
 import re
 from dateutil.parser import parse as parseDate
 import argparse
-
+import json
+import numpy as np
 
 pattNumber = re.compile('-?[0-9]*,?[0-9]*\.*[0-9]*')
 
 
+def get_byte_size(df, reg_dict):
+
+    doc = json.loads(df.to_json(orient='table'))
+    byte_size = len(json.dumps(doc).encode(reg_dict['Encoding']))
+    return byte_size
+
+def chunk_partitioning(byte_size, df, MONGO_BYTES = 16793598):
+
+    chunks = 2
+    
+    while byte_size > MONGO_BYTES:
+        operation = round(byte_size / chunks)
+        
+        if operation < MONGO_BYTES:
+            break
+        
+        chunks = chunks * 2
+
+    df_chunks = np.array_split(df, chunks)
+
+    return df_chunks
+
+def chunk_partitioning_save(df, chunks):
+    df_chunks = np.array_split(df, chunks)
+    return df_chunks
 
 def VerificarExisteArchivo (FilePath):
     if path.isfile(FilePath):

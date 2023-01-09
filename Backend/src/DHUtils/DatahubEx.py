@@ -5,6 +5,7 @@ from DHUtils import dhUtilities
 from DHUtils import dhLogs
 import json
 import pandas as pd
+from bson.objectid import ObjectId
 
 Proyecto = ''
 
@@ -132,16 +133,45 @@ def CargarFuente_a_Dataframe (argumentos):
     return df, RegistroCarga
 
 def Guardar_DataFrame_Fuente_BD(RegistroCarga, dtfr:pd.DataFrame):
-    doc =  json.loads(dtfr.to_json(orient='table'))
-    pd.set_option('display.float_format', lambda x: '%.2f' % x)
-    doc_perf = json.loads(dtfr.describe().to_json(orient='table'))
-    doc['_id'] = RegistroCarga['_id']
-    doc_perf['_id'] = RegistroCarga['_id']
-    doc_perf['name'] = "Resume"
-    dhRep.EliminarDocumentoProyecto ( 'DataLoads', doc)
-    dhRep.InsertarDocumentoBDProyecto ( 'DataLoads', doc)
-    dhRep.EliminarDocumentoProyecto ( 'DataPerf', doc_perf)
-    dhRep.InsertarDocumentoBDProyecto ( 'DataPerf', doc_perf)
+    
+    MONGO_BYTES = 16793598
+    byte_size = dhUtilities.get_byte_size(dtfr, RegistroCarga)
+
+    if MONGO_BYTES > byte_size:
+        doc =  json.loads(dtfr.to_json(orient='table'))
+        pd.set_option('display.float_format', lambda x: '%.2f' % x)
+        doc_perf = json.loads(dtfr.describe().to_json(orient='table'))
+        doc['_id'] = RegistroCarga['_id']
+        doc_perf['_id'] = RegistroCarga['_id']
+        doc_perf['name'] = "Resume"
+        dhRep.EliminarDocumentoProyecto ( 'DataLoads', doc)
+        dhRep.InsertarDocumentoBDProyecto ( 'DataLoads', doc)
+        dhRep.EliminarDocumentoProyecto ( 'DataPerf', doc_perf)
+        dhRep.InsertarDocumentoBDProyecto ( 'DataPerf', doc_perf)
+    
+    else:
+        df_chunks = dhUtilities.chunk_partitioning(byte_size, dtfr)
+        print('-'*25)
+        print('Iniciando proceso de partición.')
+        print('-'*25)
+        ini = datetime.now()
+        dhRep.delete_chunk_data('DataLoads')
+        for chunk in df_chunks:
+            doc = json.loads(chunk.to_json(orient='table'))
+            doc['chunk_id'] = str(ObjectId(RegistroCarga['_id']))
+            dhRep.InsertarDocumentoBDProyecto ( 'DataLoads', doc)
+            
+        print('-'*25)
+        print('Los chunks han sido cargados.')
+        print('-'*25)
+        fin = datetime.now()
+        print('Tiempo de Ejecución: ' + str(fin - ini))
+            
+        doc_perf = json.loads(dtfr.describe().to_json(orient='table'))
+        doc_perf['_id'] = RegistroCarga['_id']
+        doc_perf['name'] = "Resume"
+        dhRep.EliminarDocumentoProyecto ( 'DataPerf', doc_perf)
+        dhRep.InsertarDocumentoBDProyecto ( 'DataPerf', doc_perf)
 
 
 

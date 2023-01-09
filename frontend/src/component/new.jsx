@@ -113,7 +113,7 @@ export const New = () =>{
                                 <select name="enc" onChange={e => setEnc(e.target.value)}>
                                     <option value="UTF-8" selected>UTF-8</option>
                                     <option value="ISO-8859-1">ISO-8859-1</option>
-                                    <option value="LATIN">LATIN</option>
+                                    <option value="LATIN-1">LATIN-1</option>
                                     <option value="OTRO">OTRO</option>
                                 </select>
                             </div>

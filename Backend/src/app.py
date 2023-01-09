@@ -423,7 +423,6 @@ def export_data(email):
     export_json = request.get_json()
     
     source_id = MONGO_CLIENT[export_json['projectName']]['DataCleaned'].find_one()['_id']
-    print(source_id)
     
     bdProyecto = dhRepository.EstablecerBDProjecto(export_json['projectName'])
     if bdProyecto is None:
@@ -431,11 +430,13 @@ def export_data(email):
         exit(-1)
     else:
         print('Estableciendo BD Proyecto ...OK')
-
-    cleaned = dhRepository.BuscarDocumentoporId_Proyecto('DataCleaned', source_id)
-
-    dictObj = dhRepository.obtener_atributos_por_docid_prj('DataCleaned', source_id, ['schema','data'])
-    dtfrm = pd.read_json(json.dumps(dictObj), orient='table')
+    
+    register_count = dhRepository.register_count('DataCleaned')
+    if register_count > 1:
+        dtfrm = dhRepository.join_chunk_data('DataCleaned')
+    else:
+        dictObj = dhRepository.obtener_atributos_por_docid_prj('DataCleaned', source_id, ['schema','data'])
+        dtfrm = pd.read_json(json.dumps(dictObj), orient='table')
 
     if export_json['fileType'] == 'csv':
         output_name = export_json['outputName'] + '.csv'
