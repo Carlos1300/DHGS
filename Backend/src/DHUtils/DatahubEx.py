@@ -104,7 +104,7 @@ def LeerCsv_a_DataFrame (docCarga, doc_file):
     return  df_Source, 0
 
 def read_txt(docCarga, doc_file):
-    df_Source = pd.read_table(doc_file, encoding=docCarga['Encoding'], low_memory=False)
+    df_Source = pd.read_table(doc_file, encoding=docCarga['Encoding'], sep=docCarga['Separator'], low_memory=False)
     return df_Source, 0
 
 

@@ -50,6 +50,8 @@ export const Export = () => {
             let str = write(wb, {bookType:'xlsx', type:'binary'}); // generate a binary string in web browser
             writeFile(wb, data.filename);
 
+            setProjectName('');
+
         } else if(data.type === 'csv'){
             const url = window.URL.createObjectURL(new Blob([data.data]));
             const link = document.createElement('a');
@@ -57,6 +59,8 @@ export const Export = () => {
             link.setAttribute('download', data.filename)
             document.body.appendChild(link)
             link.click()
+
+            setProjectName('');
         }else{
             const fileData = JSON.stringify(data.data);
             const blob = new Blob([fileData], { type: "text/plain" });
@@ -65,6 +69,8 @@ export const Export = () => {
             link.download = data.filename;
             link.href = url;
             link.click();
+
+            setProjectName('');
         }
     }
 
