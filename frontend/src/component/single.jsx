@@ -43,7 +43,7 @@ export const Single = () => {
                     </div>
                 </div>
                 <div className="bottom">
-                <h1 className="title">Últimas Acciones</h1>
+                    <h1 className="title">Últimas Acciones</h1>
                     <TableUI />
                 </div>
             </div>

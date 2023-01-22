@@ -73,7 +73,7 @@ def apply_synonymous(datasources, mainParams, stepdict = None):
     columna_fuente = stepdict['column_src']
     columna_destino = stepdict['column_dest']
 
-    if stepdict['column_dest'] != stepdict['column_src'] :
+    if stepdict['column_dest_appsyno'] != stepdict['column_src_appsyno'] :
         dtFrDatos[columna_destino] = dtFrDatos[columna_fuente]
 
     ReglasDict = dhRep.obtener_atributos_por_filtro_prj('Rules', filtro , ['search_value','change_value'])
@@ -86,7 +86,13 @@ def apply_synonymous(datasources, mainParams, stepdict = None):
 def validate_sourcecolumns_vs_layout (datasources, mainParams, stepdict = None):
     mapeoColumnas = dict()
     dtFrDatos = datasources['_main_ds']
-    layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name'])
+    
+    if 'layout_name_validate' in stepdict.keys():
+        layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name_validate'])
+    elif 'layou_name_extract' in stepdict.keys():
+        layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name_extract'])
+    else:
+        layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name_datatypes'])
 
     for col in layout['columns']:
         if layout['header']==True:
@@ -116,13 +122,15 @@ def validate_sourcecolumns_vs_layout (datasources, mainParams, stepdict = None):
     return mapeoOk, layout
 
 def extract_layout_from_source (datasources, mainParams, stepdict = None):
-    layout = datasources['_main_layout']
-    if datasources['_main_layout'] is None:
+    
+    dtFrDatos = datasources['_main_ds']
+    
+    if '_main_layout' not in datasources.keys():
         validacion, layout = validate_sourcecolumns_vs_layout (datasources, mainParams, stepdict)
         if validacion == False:
             return False, None
-
-    dtFrDatos = datasources['_main_ds']
+    
+    layout = datasources['_main_layout']
     nombresColumnas =  [ column['column_name_source'] for column in layout['columns'] ]
     dtFrDatos = pd.DataFrame( dtFrDatos[ nombresColumnas] )
     dtFrDatos.rename (columns={ column['column_name_source'] : column['column_name'] for column in layout['columns'] }, inplace=True)
@@ -131,8 +139,15 @@ def extract_layout_from_source (datasources, mainParams, stepdict = None):
     return True, dtFrDatos
 
 def validate_vs_layout_datatypes (datasources, mainParams, stepdict = None):
-    layout = datasources['_main_layout']
+    
     dtFrDatos = datasources['_main_ds']
+    
+    if '_main_layout' not in datasources.keys():
+        validacion, layout = validate_sourcecolumns_vs_layout (datasources, mainParams, stepdict)
+        if validacion == False:
+            return False, None
+    
+    layout = datasources['_main_layout']
     for col in layout['columns']:
         resul = dtFrDatos[col['column_name']].apply(
             lambda cl: dhUtilities.ValidarFormatoObjeto(cl, col['data_type'], col['allow_null']))
@@ -152,13 +167,13 @@ def validate_vs_layout_datatypes (datasources, mainParams, stepdict = None):
 
 def validate_numeric_range (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
-    nombre_columna = stepdict['column_src']
+    nombre_columna = stepdict['column_src_valnr']
 
 
     dtfNoValidos=dtFrDatos[nombre_columna].copy()
     dtfNoValidos[:] = False
 
-    filtro={ 'rule_type':'RANGO NUMERICO','rule_name': stepdict['rule_name'] }
+    filtro={ 'rule_type':'RANGO NUMERICO','rule_name': stepdict['rule_name_valnr'] }
     ReglasDict = dhRep.obtener_atributos_por_filtro_prj('Rules', filtro, ['min_value', 'max_value'])
 
     for regla in ReglasDict:
@@ -206,22 +221,22 @@ def apply_join_from_value_vs_catalog (datasources, mainParams, stepdict = None):
 
 def apply_mask (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
-    fmt = stepdict['mask_string']
-    dtFrDatos[stepdict['column_dest']]  = [fmt.format( valor ) for valor in  dtFrDatos[ stepdict['column_src']]]
+    fmt = stepdict['mask_string_apply']
+    dtFrDatos[stepdict['column_dest_appmk']]  = [fmt.format( valor ) for valor in  dtFrDatos[ stepdict['column_src_appmk']]]
     return True, None
 
 def extract_mask_from_text (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
-    mascara = '(' + stepdict['mask_string'] + ')'
-    dtFrDatos[stepdict['column_dest']] = dtFrDatos[stepdict['column_src']].str.extract(r''+mascara, expand=False)
+    mascara = '(' + stepdict['mask_string_extract'] + ')'
+    dtFrDatos[stepdict['column_dest_exmk']] = dtFrDatos[stepdict['column_src_exmk']].str.extract(r''+mascara, expand=False)
     return True, None
 
 def extract_words_by_position (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
-    re_Delimitador = '\\' + stepdict['separator']
-    ini = stepdict['init_position']
-    fin = stepdict['final_position']
-    clCount = dtFrDatos[stepdict['column_src']].str.count(re_Delimitador).fillna(0).astype(int) + 1
+    re_Delimitador = '\\' + stepdict['separator_exwrd']
+    ini = stepdict['init_position_exwrd']
+    fin = stepdict['final_position_exwrd']
+    clCount = dtFrDatos[stepdict['column_src_exwrd']].str.count(re_Delimitador).fillna(0).astype(int) + 1
     nMaxSep = clCount.max().astype(int) - 1
 
     def fnConcat (arr, ini, fin, sep):
@@ -231,8 +246,8 @@ def extract_words_by_position (datasources, mainParams, stepdict = None):
             x+= arr[i] + sep
         return x
 
-    ser_Valores = dtFrDatos[stepdict['column_src']].str.split(re_Delimitador)
-    dtFrDatos[stepdict['column_dest']] = ser_Valores.apply(lambda arr: fnConcat(arr,ini,fin, stepdict['separator'])  )
+    ser_Valores = dtFrDatos[stepdict['column_src_exwrd']].str.split(re_Delimitador)
+    dtFrDatos[stepdict['column_dest_exwrd']] = ser_Valores.apply(lambda arr: fnConcat(arr,ini,fin, stepdict['separator'])  )
 
     return True, None
 
@@ -252,7 +267,7 @@ def validar_fonetico(datasources, mainParams, stepdict = None):
 
     """
     df_main = datasources['_main_ds']
-    origen = stepdict['col_origen']
+    origen = stepdict['col_origen_valfon']
     result = pd.DataFrame()
     result[origen] = df_main[origen]
     result["soundex"] = result[origen].apply(lambda x: jellyfish.soundex(x))
@@ -354,8 +369,8 @@ def calculate_expression (datasources, mainParams, stepdict = None):
     return True, df_main
 
 def create_mask(datasources, mainParams, stepdict = None):
-    src = stepdict['column_src']
-    dest = stepdict['column_dest']
+    src = stepdict['column_src_crmk']
+    dest = stepdict['column_dest_crmk']
     def get_mask(dato):
         mask='' 
         for c in dato:
@@ -376,12 +391,12 @@ def create_mask(datasources, mainParams, stepdict = None):
 
 def get_value_freq(datasources, mainParams, stepdict = None):
     df_main = datasources['_main_ds']
-    col_src = stepdict['column_src']
-    col_id = stepdict['column_id']
-    separator = stepdict['separator']
-    one_word = stepdict['one_word']
-    init_pos = stepdict['init_pos']
-    final_pos = None if stepdict['final_pos'] == "None" else stepdict['final_pos']
+    col_src = stepdict['column_src_fqval']
+    col_id = stepdict['column_id_fqval']
+    separator = stepdict['separator_fqval']
+    one_word = stepdict['one_word_fqval']
+    init_pos = stepdict['init_pos_fqval']
+    final_pos = None if stepdict['final_pos_fqval'] == "None" else stepdict['final_pos_fqval']
     if final_pos != None and final_pos < init_pos:
         return False, "Posición final mayor que posición inicial."
     new_column = []
@@ -415,109 +430,14 @@ def get_value_freq(datasources, mainParams, stepdict = None):
     dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
     return True, df_final
 
-# def window_key(datasources, mainParams, stepdict = None):
-#     dataframe = datasources['_main_ds']
-#     dataframe["window_key"]=""
-#     vocales = "AEIOUaeiou"
-#     consonantes = "bcdfghjklmnpqrstwxyzñ"
-#     consonantes = consonantes + consonantes.upper()
-
-#     #Funnción que obtiene las vocales de un dato.
-#     def get_vowels(dato, rango, repetir = True, actual=''):
-#         res = actual
-#         for c in dato[0:None]:
-#             if (len(res) == rango):
-#                     return res
-#             if c in vocales:
-#                 if (not repetir and c not in res):
-#                     res += c
-#                 if (repetir):
-#                     res += c 
-#         return res
-
-#     #Funnción que obtiene las consonantes de un dato.
-#     def get_consonants(dato, rango, repetir = True, actual=''):
-#         res = actual
-#         for c in dato[0:None]:
-#             if (len(res) == rango):
-#                     return res
-#             if c in consonantes:
-#                 if (not repetir and c not in res):
-#                     res += c
-#                 if (repetir):
-#                     res += c
-#         return res 
-
-#     #Función que obtiene cualquier caractér de un dato en un rango especificado.
-#     def get_any(dato, rango, repetir = True, actual=''):
-#         res = actual
-#         for c in dato[0:None]:
-#             if (len(res) == rango):
-#                 return res
-#             if (not repetir and c not in res):
-#                 res += c
-#             if (repetir):
-#                 res += c
-#         return res  
-
-#     #Se obtienen los valores de los diccionarios
-#     columnas = stepdict.get('columnas')
-#     reglas = stepdict.get('reglas')
-#     rangos = stepdict.get('rangos')
-#     repetidos = stepdict.get('repetir')
-
-#     #Se valida que la longitud de las listas de parámetros sea la misma.
-#     is_valid = len(columnas) == len(reglas) and len(reglas) == len(rangos) and len(rangos) == len(repetidos)
-#     #En caso de que no, se regresa False y el dataframe sin llaves.
-#     if not is_valid:
-#         return False, dataframe
-
-#     #Se recorre cada parámetro por regla
-#     for x in range(len(columnas)):
-#         columna = columnas[x]
-#         selection = reglas[x]
-#         rango = rangos[x]
-#         repetir = repetidos[x]
-        
-#         #Vocales
-#         if ("A" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-#                 lambda x: get_any(x, rango, repetir = repetir)
-#                 ) 
-#         elif ("V" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(lambda x: get_vowels(x,rango, repetir = repetir))
-#         elif ("FV" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-#                 lambda x: get_vowels(x[1:], rango, actual=x[0], repetir=repetir)
-#                 ) 
-#         elif ("FV2" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-#                 lambda x: get_vowels(x[1:], rango, actual=x[0], repetir=repetir)
-#                 ) 
-
-#         #Consonantes    
-#         elif ("C" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(lambda x: get_consonants(x,rango, repetir = repetir))
-            
-#         elif ("FC" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-#                 lambda x: get_consonants(x[1:], rango, actual=x[0], repetir=repetir)
-#                 )
-
-#         elif ("FC2" == selection):
-#             dataframe['window_key'] = dataframe['window_key'] + dataframe[columna].apply(
-#                 lambda x: get_consonants(x[1:], rango,  actual=x[0], repetir=repetir)
-#                 ) 
-#     return True, dataframe
-
 def clean_html(datasources, mainParams, stepdict = None):
     #Se leen los valores de los parámetros.
     df_main = datasources['_main_ds']
-    origen = stepdict['col_origen']
-    destino = stepdict['col_destino']
-    chr_especiales  = stepdict['chr_especiales']
-    salto = stepdict['salto_linea']
-    titulos_img = stepdict['titulos_img']
+    origen = stepdict['col_origen_clhtml']
+    destino = stepdict['col_destino_clhtml']
+    chr_especiales  = stepdict['chr_especiales_clhtml']
+    salto = stepdict['salto_linea_clhtml']
+    titulos_img = stepdict['titulos_img_clhtml']
 
     """ Función interna que quita las etiquetas propias del código html y las reemplaza por espacios vacíos."""
     def quitar_etiquetas():
@@ -622,31 +542,21 @@ def get_column_type(datasources, mainParams, stepdict = None):
         #Se determina si la columna contiene nulos.
         has_nulls = True if (dataframe[col].isna().any()) == True else False
         
-        if has_nulls == True:
-            null_count = dataframe[col].isna().count
+        null_count = int(dataframe[col].isna().sum())
             
-            col_info = {
-                "Data Type" : col_type,
-				"Max Length" : max_len,
-				"Max Value" : max_val,
-				"Min Length" : min_len,
-				"Min Value" : min_val,
-				"Nulls" : has_nulls,
-				"Null Count": null_count
-			}
-        else:
-            col_info = {
-				"Data Type" : col_type,
-				"Max Length" : max_len,
-				"Max Value" : max_val,
-				"Min Length" : min_len,
-				"Min Value" : min_val,
-				"Nulls" : has_nulls
-			}
-			
-
+        col_info = {
+            "Data Type" : col_type,
+			"Max Length" : max_len,
+			"Max Value" : max_val,
+			"Min Length" : min_len,
+			"Min Value" : min_val,
+			"Nulls" : has_nulls,
+			"Null Count": null_count
+            }
+        
         data_info[col] = col_info
-
+    
+    print(json.dumps(data_info))
     doc = json.loads(json.dumps(data_info))
     doc['name'] = "Data Summary"
     dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
@@ -679,12 +589,12 @@ def get_substring(datasources, mainParams, stepdict = None):
         DataFrameResultado: Dataframe con la columna de llaves añadida.
     """
     df_main = datasources['_main_ds']
-    origen = stepdict['col_origen']
-    destino = stepdict['col_destino']
-    init_word = int(stepdict['init_word'])
-    total_words = int(stepdict['total_words'])
-    sep = str(stepdict['separator'])
-    join_char = str(stepdict['join_char'])
+    origen = stepdict['col_origen_substring']
+    destino = stepdict['col_destino_substring']
+    init_word = int(stepdict['init_word_substring'])
+    total_words = int(stepdict['total_words_substring'])
+    sep = str(stepdict['separator_substring'])
+    join_char = str(stepdict['join_char_substring'])
 
     df_main[destino] = df_main[origen].apply(
         lambda x: join_char.join(x.split(sep)[init_word:total_words])
@@ -713,9 +623,9 @@ def concat_columns(datasources, mainParams, stepdict = None):
     """
     
     df_main = datasources['_main_ds']
-    origen = [x.strip() for x in stepdict['col_origen'].split(',')]
-    dest = stepdict["col_destino"]
-    join_char = stepdict["join_char"]
+    origen = [x.strip() for x in stepdict['col_origen_concatcols'].split(',')]
+    dest = stepdict["col_destino_concatcols"]
+    join_char = stepdict["join_char_concatcols"]
     df_main[dest] = df_main[origen].apply(lambda row: join_char.join(row.values.astype(str)), axis=1)
     return True, df_main
 
@@ -723,56 +633,31 @@ def concat_columns(datasources, mainParams, stepdict = None):
 ########## FUNCIONES DE EDENRED ADAPTADAS AL DATAHUB ##########
 
 
-def remove_by_len(datasources, mainParams, stepdict= None):
-    """
-    Rutina que se encarga de eliminar los datos de una columna que no cumplan con la longitud
-    deseada
+def adjust_length(datasources, mainParams, stepdict= None):
+    """Método encargado de ajustar las columnas a la longitud deseada.
 
     Args:
-        df (pandas.DataFrame): DataFrame en donde se aplicará la rutina.
-        column (str): Columna seleccionada para aplicar la rutina.
-        length_removal (int): Longitud deseada.
-        
-    Returns:
-        DataFrame: DataFrame que contiene los cambios aplicados.
+        datasources (_type_): _description_
+        mainParams (_type_): _description_
+        stepdict (_type_, optional): _description_. Defaults to None.
     """
-    
+
     def check_len(dato):
         dato = str(dato)
-        if len(dato) > stepdict['length_removal']:
-            dato = ''.join(list(dato)[:stepdict['length_removal']])
+        if len(dato) >= length:
+            dato = ''.join(list(dato)[:length])
+        elif len(dato) < length:
+            dato = dato + "0"*(length - len(dato))
         
         return dato
-    
+
     df_main = datasources['_main_ds']
+    columns = [x.strip() for x in stepdict['apply_cols_adjlen'].split(',')]
+    length = int(stepdict['length_adj'])
     
-    df_main[stepdict['col_apply_rmlen']] = df_main[stepdict['col_apply_rmlen']].apply(lambda x: check_len(x))
-    
-    return True, df_main
-
-def mark_by_len(datasources, mainParams, stepdict= None):
-    """
-    Rutina que se encarga de marcar aquellos datos que cumplen con la 
-    longitud deseada.
-
-    Args:
-        df (pandas.DataFrame): DataFrame en donde se aplicará la rutina.
-        column (str): Columna seleccionada para aplicar la rutina.
-        length_mark (int): Longitud deseada.
-    """
-    
-    def check_len(dato, length_mark):
-        dato = str(dato)
-        if len(dato) == int(length_mark):
-            dato = "#" + dato
-        else:
-            dato = dato
-        return dato
-    
-    df_main = datasources['_main_ds']
-    
-    df_main[stepdict['col_apply_mklen']] = df_main[stepdict['col_apply_mklen']].apply(lambda x: check_len(x, stepdict['length_mark']))
-
+    for column in columns:
+        df_main[column] = df_main[column].apply(lambda x: check_len(x))
+        
     return True, df_main
 
 def rm_negativos(datasources, mainParams, stepdict= None):

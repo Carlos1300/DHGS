@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import swal from 'sweetalert';
+import Swal from 'sweetalert2'
 import { AuthContext } from "../context/AuthContext";
 
 
@@ -30,7 +30,7 @@ export const Login = () => {
         const data = await res.json();
 
         if(res.status !== 200 && data.msg !== ''){
-            swal({
+            Swal.fire({
                 title: 'Error al iniciar sesión',
                 text: data.msg,
                 icon: 'error',

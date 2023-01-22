@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../general.scss";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
-import swal from 'sweetalert';
+import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 
 const API = process.env.REACT_APP_API;
@@ -10,6 +10,7 @@ const API = process.env.REACT_APP_API;
 export const NewFlow = () =>{
 
     const [rulesList, setRulesList] = useState([]);
+    const [rulesNames, setRulesNames] = useState([]);
     const [paramsList, setParamsList] = useState([]);
     const [page, setPage] = useState(0);
     const [availableRules, setAvailableRules] = useState([]);
@@ -39,7 +40,6 @@ export const NewFlow = () =>{
             }
         }
 
-
         return extractedParams;
     }
 
@@ -47,12 +47,17 @@ export const NewFlow = () =>{
 
     const handleChange = (e) =>{
         const {value, checked} = e.target;
+        const rulename = e.target.name
 
         if(checked){
             setRulesList(pre => [...pre, value]);
+            setRulesNames(pre => [...pre, rulename])
         }else{
             setRulesList(pre => {
-                return [...pre.filter(rule => rule!==value)];
+                return [...pre.filter(rule => rule !== value)];
+            })
+            setRulesNames(pre => {
+                return [...pre.filter(name => name!== rulename)];
             })
         }
     }
@@ -138,7 +143,7 @@ export const NewFlow = () =>{
         const data = await res.json();
 
         if(res.status !== 200 && data.msg !== ''){
-            swal({
+            Swal.fire({
                 title: 'Error al cargar la fuente de datos',
                 text: 'Revise de nuevo los campos.',
                 icon: 'error',
@@ -151,7 +156,7 @@ export const NewFlow = () =>{
             setParamsList([]);
 
         }else{
-            swal({
+            Swal.fire({
                 title: 'Carga exitosa',
                 text: data.msg,
                 icon: 'success',
@@ -166,6 +171,8 @@ export const NewFlow = () =>{
         }
         
     }
+
+    console.log(rulesList, rulesNames)
 
     const titles = ['Agregar Reglas', 'Agregar Parámetros'];
 
@@ -192,6 +199,22 @@ export const NewFlow = () =>{
                     <p className="ruletitle">Nombre</p>
                     <input className="parambox" type="text" name="flowName" value={flowName} onChange={e => setFlowName(e.target.value)} required placeholder="Nombre del Flujo" />
                 </div>
+                <div className="top flowname">
+                    <p className="ruletitle">Orden de reglas</p>
+                    {
+                        rulesNames.length === 0 ? (
+                            <p style={{textAlign: 'center'}}>¡No se ha seleccionado ninguna regla!</p>
+                        ) : (
+                            <p>
+                                {
+                                    rulesNames.map((item, index) => (
+                                        <span key={index}>{index === rulesNames.length-1 ? item : item + ' ' + String.fromCharCode(8594) + ' '}</span>
+                                    ))
+                                }
+                            </p>
+                        )
+                    }
+                </div>
 
                 {
                     page === 0 ? (
@@ -201,7 +224,7 @@ export const NewFlow = () =>{
                             {
                                 availableRules.map((item, index) => (
                                     <div className="col" key={index}>
-                                        <input type="checkbox" value={item.value} onChange={handleChange} /> <span className="ruletitle">{item.name}</span>
+                                        <input type="checkbox" value={item.value} onChange={handleChange} name={item.name} /> <span className="ruletitle">{item.name}</span>
                                         <p className="ruledesc">{item.desc}</p>
                                     </div>
                                 ))

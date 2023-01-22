@@ -3,13 +3,13 @@ import "../general.scss";
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from "react-router-dom";
 import { ProjectContext } from "../context/projectContext";
-import swal from 'sweetalert';
+import Swal from 'sweetalert2';
 
 const API = process.env.REACT_APP_API;
 
 export const Flows = () => {
 
-  const [activeProject, setActiveProject] = useContext(ProjectContext)
+  const [activeProject] = useContext(ProjectContext)
 
   const [flows, setFlows] = useState([]);
 
@@ -37,7 +37,7 @@ export const Flows = () => {
     const data = await res.json();
 
     if(res.status !== 200 && data.msg !== ''){
-        swal({
+        Swal.fire({
             title: 'Error al importar el flujo',
             text: 'Este flujo ya se encuentra en el proyecto.',
             icon: 'error',
@@ -47,7 +47,7 @@ export const Flows = () => {
         });
 
     }else{
-        swal({
+        Swal.fire({
             title: 'Flujo agregado',
             text: data.msg,
             icon: 'success',
@@ -72,7 +72,7 @@ export const Flows = () => {
     const data = await res.json();
 
     if(res.status !== 200 && data.msg !== ''){
-        swal({
+        Swal.fire({
             title: 'Error al importar el flujo',
             text: 'Este flujo ya se encuentra en el proyecto.',
             icon: 'error',
@@ -82,7 +82,7 @@ export const Flows = () => {
         });
     }else{
 
-      swal({
+      Swal.fire({
           title: 'Flujo eliminado',
           text: data.msg,
           icon: 'success',
@@ -110,7 +110,7 @@ export const Flows = () => {
         <ul className="flowNames">
           {
             params.row.Sequence.map((item, index) =>(
-              <li key={index}>{index + 1 + "." + " " + item.dispname}</li>
+              <li key={index}>{(index + 1) + ". " + item.dispname}</li>
             ))
           }
         </ul>

@@ -3,7 +3,7 @@ import "../general.scss";
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from "react-router-dom";
 // import { ProjectContext } from "../context/projectContext";
-import swal from 'sweetalert';
+import Swal from 'sweetalert2'
 
 const API = process.env.REACT_APP_API;
 
@@ -22,6 +22,17 @@ export const ProjectFlows = () => {
   }, [])
 
   const applyFlow = async (id) => {
+    Swal.fire({
+      title: 'Aplicando flujo.',
+      html: 'Su flujo está siendo aplicado, por favor espere.<br><br><b><style="color: crimson;">No cierre esta ventana hasta el que proceso haya terminado.</style></b>',
+      imageUrl: 'https://www.tuyu.mx/assets/loader.gif',
+      imageWidth: 100,
+      imageHeight: 100,
+      imageAlt: 'Custom image',
+      confirmButtonColor: "#000",
+      showConfirmButton: false,
+      allowOutsideClick: false
+    });
 
     const res = await fetch(API + '/applyFlow/' + localStorage.getItem('project'),{
       method: 'POST',
@@ -35,7 +46,7 @@ export const ProjectFlows = () => {
     const data = await res.json();
 
     if(res.status !== 200 && data.msg !== ''){
-        swal({
+        Swal.fire({
             title: 'Error al cargar la fuente de datos',
             text: 'Revise de nuevo los campos.',
             icon: 'error',
@@ -45,8 +56,8 @@ export const ProjectFlows = () => {
         });
 
     }else{
-        swal({
-            title: 'Carga exitosa',
+        Swal.fire({
+            title: 'Aplicación exitosa',
             text: data.msg,
             icon: 'success',
             button: 'Continuar',
@@ -70,7 +81,7 @@ export const ProjectFlows = () => {
     const data = await res.json();
 
     if(res.status !== 200 && data.msg !== ''){
-        swal({
+        Swal.fire({
             title: 'Error al eliminar el flujo',
             text: 'Revise de nuevo los campos.',
             icon: 'error',
@@ -80,7 +91,7 @@ export const ProjectFlows = () => {
         });
 
     }else{
-        swal({
+        Swal.fire({
             title: 'Se eliminó el flujo',
             text: data.msg,
             icon: 'success',
@@ -108,7 +119,7 @@ export const ProjectFlows = () => {
         <ul className="flowNames">
           {
             params.row.Sequence.map((item, index) =>(
-              <li key={index}>{index + 1 + "." + " " + item.dispname}</li>
+              <li key={index}>{(index + 1) + ". " + item.dispname}</li>
             ))
           }
         </ul>

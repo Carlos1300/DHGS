@@ -3,7 +3,7 @@ import "../general.scss";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import swal from 'sweetalert';
+import Swal from 'sweetalert2';
 
 const API = process.env.REACT_APP_API;
 
@@ -39,7 +39,7 @@ export const New = () =>{
         const data = await res.json();
 
         if(res.status !== 200 && data.msg !== ''){
-            swal({
+            Swal.fire({
                 title: 'Error al cargar la fuente de datos',
                 text: 'Revise de nuevo los campos.',
                 icon: 'error',
@@ -55,7 +55,7 @@ export const New = () =>{
             setEnc('');
 
         }else{
-            swal({
+            Swal.fire({
                 title: 'Carga exitosa',
                 text: data.msg + ' : ' + data.objID,
                 icon: 'success',

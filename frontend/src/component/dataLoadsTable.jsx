@@ -3,7 +3,7 @@ import "../general.scss";
 import { DataGrid } from '@mui/x-data-grid';
 import { useNavigate } from "react-router-dom";
 import { ProjectContext } from "../context/projectContext";
-import swal from "sweetalert";
+import Swal from "sweetalert2";
 
 const API = process.env.REACT_APP_API;
 
@@ -26,7 +26,7 @@ export const DataLoadsTable = () => {
       getPerfs();
 
     } else {
-      swal({
+      Swal.fire({
         title: 'Error al cargar el historial de cargas',
         text: 'Por favor seleccione un proyecto primero.',
         icon: 'error',

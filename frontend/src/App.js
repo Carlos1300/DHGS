@@ -8,13 +8,13 @@ import { Login } from './component/login';
 import { List } from "./component/list";
 import { Single } from "./component/single";
 import { New } from "./component/new";
-import { ListPerf } from "./component/listPerf";
 import { ListLoads } from "./component/listLoads";
 import { ListFlows } from "./component/listFlow"; 
 import { NewFlow } from "./component/newflow";
 import { AuthContext } from "./context/AuthContext";
 import { ListProjectFlows } from "./component/listProjectFlows";
 import { Export } from "./component/export";
+import { PerfMenu } from "./component/perfMenu"
 
 function App() {
 
@@ -53,7 +53,7 @@ function App() {
                 path="/dataperf" 
                 element={
                 <RequireAuth>
-                  <ListPerf />
+                  <PerfMenu />
                 </RequireAuth>
                 }
               />

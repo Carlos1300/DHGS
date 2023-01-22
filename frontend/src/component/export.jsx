@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Sidebar } from './sidebar';
 import { Navbar } from './navbar';
 // import swal from 'sweetalert';
-import { read, utils, writeFile, write } from 'xlsx';
+import { utils, writeFile } from 'xlsx';
 
 const API = process.env.REACT_APP_API;
 
@@ -23,7 +23,7 @@ export const Export = () => {
         }
 
         const ExportJSON = {
-            projectName: project,
+            projectName: project + localStorage.getItem('user'),
             fileType: fileType,
             enc: enc,
             outputName: outputName
@@ -46,8 +46,6 @@ export const Export = () => {
             let ws = utils.json_to_sheet(data.data.data);
             let wb = utils.book_new();
             utils.book_append_sheet(wb, ws, "Hoja1");
-            let buf = write(wb, {bookType:'xlsx', type:'buffer'}); // generate a nodejs buffer
-            let str = write(wb, {bookType:'xlsx', type:'binary'}); // generate a binary string in web browser
             writeFile(wb, data.filename);
 
             setProjectName('');
