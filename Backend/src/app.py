@@ -247,6 +247,119 @@ def get_data_loads(email, project):
     
     return jsonify(loads)
 
+@app.route('/catalogs/<email>', methods=['POST', 'GET', 'DELETE'])
+def catalogs(email):
+    
+    if request.method == 'POST':
+        add_catalog_request = {
+        "file": request.files['dataSource'],
+        "name": request.form['pName'],
+        "source_type": request.form['fileType'],
+        "separator": request.form['sep'],
+        "encoding": request.form['enc'],
+        "sheet_name": request.form['sheet'],
+        "columns": request.form['columns'],
+        "description": request.form['desc'],
+        "user": email
+        }
+        
+        doc = dhRepository.BuscarRegistroEnBD('Catalogos', 'CatalogName', add_catalog_request['name'])
+        
+        if doc == None:
+            DatahubEx.load_catalog(add_catalog_request)
+            msg = 'Catálogo insertado'
+            
+        else:
+            msg = 'Se ha actualizado con éxito la fuente de datos con el ID de objeto'
+        
+        return(jsonify({'msg': msg}))
+
+    
+    elif request.method == 'DELETE':
+        delete_id = request.get_json()
+        MONGO_CLIENT['datahub']['Catalogos'].delete_one({'_id': ObjectId(delete_id)})
+    
+        return jsonify({"msg": "El catálogo ha sido eliminado"})
+    
+    else:
+        catalogs = []
+        
+        id = 1
+        
+        prev_name = ''
+        
+        for doc in MONGO_CLIENT['datahub']['Catalogos'].find({'$or': [{'User': 'Public'}, {'User': email}]}):
+            
+            if prev_name != doc['CatalogName']:
+            
+                catalogs.append({
+                    'id': id,
+                    '_id': str(ObjectId(doc['_id'])),
+                    'name': doc['CatalogName'],
+                    'description': doc['Description'],
+                    'user': doc['User']
+                })
+            
+            prev_name = doc['CatalogName']
+            id+=1
+        
+        return jsonify(catalogs)
+
+@app.route('/rules/<project>', methods=['POST', 'GET', 'DELETE'])
+def rules(project):
+    
+    if request.method == 'POST':
+        add_catalog_request = {
+        "file": request.files['dataSource'],
+        "name": request.form['pName'],
+        "source_type": request.form['fileType'],
+        "separator": request.form['sep'],
+        "encoding": request.form['enc'],
+        "sheet_name": request.form['sheet'],
+        "columns": request.form['columns'],
+        "description": request.form['desc'],
+        "project": project
+        }
+        
+        doc = dhRepository.BuscarRegistroEnBD('Catalogos', 'CatalogName', add_catalog_request['name'])
+        
+        if doc == None:
+            DatahubEx.load_catalog(add_catalog_request)
+            msg = 'Catálogo insertado'
+            
+        else:
+            msg = 'Se ha actualizado con éxito la fuente de datos con el ID de objeto'
+        
+        return(jsonify({'msg': msg}))
+
+    
+    elif request.method == 'DELETE':
+        delete_id = request.get_json()
+        MONGO_CLIENT['datahub']['Catalogos'].delete_one({'_id': ObjectId(delete_id)})
+    
+        return jsonify({"msg": "El catálogo ha sido eliminado"})
+    
+    else:
+        project_rules = []
+        
+        id = 1
+        
+        for doc in MONGO_CLIENT[project]['Rules'].find({}):
+            
+            project_rules.append({
+                'id': id,
+                '_id': str(ObjectId(doc['_id'])),
+                'name': doc['RuleName'],
+                'type': doc['RuleType'],
+                'description': doc['RuleDesc']
+            })
+
+        id+=1
+        
+        return jsonify(project_rules)
+        
+
+
 ####################################### DATA FLOW IMPLEMENTATION ###################################################
 
 @app.route('/getRules', methods=['GET'])
@@ -440,14 +553,14 @@ def export_data(email):
 
     if export_json['fileType'] == 'csv':
         output_name = export_json['outputName'] + '.csv'
-        return jsonify({'data': dtfrm.to_csv(), 'type': 'csv', 'filename': output_name})
+        return jsonify({'data': dtfrm.to_csv(index=False), 'type': 'csv', 'filename': output_name})
     
     elif export_json['fileType'] == 'xlsx':
         output_name = export_json['outputName'] + '.xlsx'
         return jsonify({'data': json.loads(json.dumps(dictObj)), 'type': 'xlsx', 'filename': output_name})
     else:
         output_name = export_json['outputName'] + '.txt'
-        return jsonify({'data': dtfrm.to_csv(), 'type': 'txt', 'filename': output_name})
+        return jsonify({'data': dtfrm.to_csv(sep='\t', index=False, header=True), 'type': 'txt', 'filename': output_name})
 
 if __name__ == "__main__":
     app.run(debug=True)

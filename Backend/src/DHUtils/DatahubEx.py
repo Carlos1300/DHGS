@@ -107,7 +107,6 @@ def read_txt(docCarga, doc_file):
     df_Source = pd.read_table(doc_file, encoding=docCarga['Encoding'], sep=docCarga['Separator'], low_memory=False)
     return df_Source, 0
 
-
 def CargarFuente_a_Dataframe (argumentos):
     RegistroCarga, doc_file = RegistrarInicioCargaDeArchivo(argumentos)
     if argumentos['source_type'] == 'xlsx':
@@ -135,7 +134,7 @@ def CargarFuente_a_Dataframe (argumentos):
 def Guardar_DataFrame_Fuente_BD(RegistroCarga, dtfr:pd.DataFrame):
     
     MONGO_BYTES = 16793598
-    byte_size = dhUtilities.get_byte_size(dtfr, RegistroCarga)
+    byte_size = dhUtilities.get_byte_size(dtfr, RegistroCarga['Encoding'])
 
     if MONGO_BYTES > byte_size:
         doc =  json.loads(dtfr.to_json(orient='table'))
@@ -151,29 +150,47 @@ def Guardar_DataFrame_Fuente_BD(RegistroCarga, dtfr:pd.DataFrame):
     
     else:
         df_chunks = dhUtilities.chunk_partitioning(byte_size, dtfr)
-        print('-'*25)
-        print('Iniciando proceso de partición.')
-        print('-'*25)
-        ini = datetime.now()
         dhRep.delete_chunk_data('DataLoads')
         for chunk in df_chunks:
             doc = json.loads(chunk.to_json(orient='table'))
             doc['chunk_id'] = str(ObjectId(RegistroCarga['_id']))
             dhRep.InsertarDocumentoBDProyecto ( 'DataLoads', doc)
             
-        print('-'*25)
-        print('Los chunks han sido cargados.')
-        print('-'*25)
-        fin = datetime.now()
-        print('Tiempo de Ejecución: ' + str(fin - ini))
-            
         doc_perf = json.loads(dtfr.describe().to_json(orient='table'))
         doc_perf['_id'] = RegistroCarga['_id']
         doc_perf['name'] = "Resume"
         dhRep.EliminarDocumentoProyecto ( 'DataPerf', doc_perf)
         dhRep.InsertarDocumentoBDProyecto ( 'DataPerf', doc_perf)
+        
+#################### CATALOG UPLOAD ##########################
 
-
+def load_catalog(args):
+    MONGO_BYTES = 16793598
+    
+    if args['columns'] != '':
+        columns = [x.strip() for x in args['columns'].split(',')]
+        cat = pd.read_csv(args['file'], encoding= args['encoding'], sep= args['separator'])[columns]
+    else:
+        cat = pd.read_csv(args['file'], encoding= args['encoding'], sep= args['separator'])
+    
+    byte_size = dhUtilities.get_byte_size(cat, args['encoding'])
+    
+    if MONGO_BYTES > byte_size:
+        doc = json.loads(cat.to_json(orient='table'))
+        doc['CatalogName'] = args['name']
+        doc['User'] = args['user']
+        doc['Description'] = args['description']
+        
+        dhRep.insert_document_db('Catalogos', doc)
+        
+    else:
+        df_chunks = dhUtilities.chunk_partitioning(byte_size, cat)
+        for chunk in df_chunks:
+            doc = json.loads(chunk.to_json(orient='table'))
+            doc['CatalogName'] = args['name']
+            doc['User'] = args['user']
+            doc['Description'] = args['description']
+            dhRep.insert_document_db('Catalogos', doc)
 
 
 #

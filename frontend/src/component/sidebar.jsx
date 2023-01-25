@@ -15,6 +15,7 @@ import { ProjectContext } from "../context/projectContext";
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import DatasetIcon from '@mui/icons-material/Dataset';
 import { AuthContext } from "../context/AuthContext";
+import DescriptionIcon from '@mui/icons-material/Description';
 
 export const Sidebar = () => {
 
@@ -66,6 +67,12 @@ export const Sidebar = () => {
               <li>
                 <InventoryIcon className="icon"/>
                 <span>Repositorio</span>
+              </li>
+            </Link>
+            <Link to='/filemenu'>
+              <li>
+                <DescriptionIcon className="icon"/>
+                <span>Archivos</span>
               </li>
             </Link>
             <p className="title">PROCESOS</p>

@@ -15,6 +15,10 @@ import { AuthContext } from "./context/AuthContext";
 import { ListProjectFlows } from "./component/listProjectFlows";
 import { Export } from "./component/export";
 import { PerfMenu } from "./component/perfMenu"
+import { FileMenu } from "./component/fileMenu";
+import { ListCatalogs } from "./component/listCatalogs";
+import { NewCatalog } from "./component/newCatalog";
+import { ListRules } from "./component/listRules";
 
 function App() {
 
@@ -49,6 +53,23 @@ function App() {
                 </RequireAuth>
                 }
               />
+              {/* FILE MENU LINKS */}
+              <Route path="filemenu">
+                <Route index element={<RequireAuth><FileMenu /></RequireAuth>} />
+                <Route path='catalogs'>
+                  <Route index element={<RequireAuth><ListCatalogs /></RequireAuth>} />
+                  <Route path="new" 
+                    element={
+                    <RequireAuth>
+                      <NewCatalog />
+                    </RequireAuth>
+                    }
+                  />
+                </Route>
+                <Route path="rules/:project" element={<RequireAuth><ListRules /></RequireAuth>} />
+              </Route>
+              
+
               <Route 
                 path="/dataperf" 
                 element={

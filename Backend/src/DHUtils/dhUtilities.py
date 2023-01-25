@@ -11,10 +11,10 @@ import numpy as np
 pattNumber = re.compile('-?[0-9]*,?[0-9]*\.*[0-9]*')
 
 
-def get_byte_size(df, reg_dict):
+def get_byte_size(df, encoding):
 
     doc = json.loads(df.to_json(orient='table'))
-    byte_size = len(json.dumps(doc).encode(reg_dict['Encoding']))
+    byte_size = len(json.dumps(doc).encode(encoding))
     return byte_size
 
 def chunk_partitioning(byte_size, df, MONGO_BYTES = 16793598):

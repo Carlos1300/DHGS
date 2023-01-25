@@ -107,6 +107,11 @@ def InsertarDocumentoBDProyecto(Coleccion, Documento):
     doc = db_Proyecto[Coleccion].find_one({'_id': nuevo.inserted_id})
     return doc
 
+def insert_document_db(collection, doc, DB = 'datahub'):
+    new = local_mongo_client[DB][collection].insert_one(doc)
+    doc = local_mongo_client[DB][collection].find_one({'_id': new.inserted_id})
+    return doc
+
 
 def Buscar_BaseDatos(NombreBaseDatos):
     

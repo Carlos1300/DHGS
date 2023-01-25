@@ -23,11 +23,12 @@ export const Export = () => {
         }
 
         const ExportJSON = {
-            projectName: project + localStorage.getItem('user'),
+            projectName: project,
             fileType: fileType,
             enc: enc,
-            outputName: outputName
+            outputName: outputName + '_' + localStorage.getItem('email')
         }
+        console.log(ExportJSON)
 
         const res = await fetch(API + '/export_data/' + localStorage.getItem('email'),{
             method: 'POST',

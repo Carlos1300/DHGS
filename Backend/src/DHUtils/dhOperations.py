@@ -69,16 +69,14 @@ def save_source_main (datasources, mainParams, stepdict = None ):
 def apply_synonymous(datasources, mainParams, stepdict = None):
     #operacion para aplicar sustitución por sinónimos a una columna origen y coloca el resultado en la columna destino
     dtFrDatos = datasources['_main_ds']
-    filtro={ 'rule_type':'SINONIMO','rule_name': stepdict['rule_name'] }
-    columna_fuente = stepdict['column_src']
-    columna_destino = stepdict['column_dest']
+    columna_fuente = stepdict['column_src_appsyno']
+    
+    filtro = {'RuleName': stepdict['rule_name']}
 
-    if stepdict['column_dest_appsyno'] != stepdict['column_src_appsyno'] :
-        dtFrDatos[columna_destino] = dtFrDatos[columna_fuente]
+    ReglasDict = dhRep.obtener_atributos_por_filtro_prj('Rules', filtro, ['data'])[0]['data']
 
-    ReglasDict = dhRep.obtener_atributos_por_filtro_prj('Rules', filtro , ['search_value','change_value'])
     for regla in ReglasDict:
-        dtFrDatos[columna_destino] = dtFrDatos[columna_destino].str.replace(regla['search_value'], regla['change_value'])
+        dtFrDatos[columna_fuente] = dtFrDatos[columna_fuente].str.replace(regla['search_value'], regla['change_value'])
 
     log.registrar_ejecucion_exitosa_operacion_dataflow_prj (mainParams['flow_id'], stepdict )
     return True, None
