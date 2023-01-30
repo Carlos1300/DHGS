@@ -122,6 +122,21 @@ export const NewFlow = () =>{
                     delete JSONelement[prop];
                 }
             }
+        } else{
+            for (const rule of availableRules.map(a => a)){
+                if (rulesList.includes(rule.value)){
+                    JSONelement.dispname = rule.name
+                    JSONelement.name = rule.value
+                    JSONelement.order = order;
+                    order++;
+
+                    JSONdata.push({...JSONelement})
+                }
+
+                for (const prop of Object.getOwnPropertyNames(JSONelement)) {
+                    delete JSONelement[prop];
+                }
+            }
         }
 
         JSONdata.push({...{
@@ -172,8 +187,6 @@ export const NewFlow = () =>{
         
     }
 
-    console.log(rulesList, rulesNames)
-
     const titles = ['Agregar Reglas', 'Agregar Parámetros'];
 
     const forwardButton = () =>{
@@ -183,7 +196,8 @@ export const NewFlow = () =>{
     }
 
     const returnButton = () =>{
-        setRulesList((rulesList) => rulesList.splice(0, rulesList.length))
+        setRulesList((rulesList) => rulesList.splice(0, rulesList.length));
+        setRulesNames((rulesNames) => rulesNames.splice(0, rulesNames.length));
         setPage((page) => page - 1);
     }
 

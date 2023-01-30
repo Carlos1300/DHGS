@@ -8,17 +8,17 @@ import Swal from "sweetalert2";
 
 const API = process.env.REACT_APP_API;
 
-export const DataPerfTable = () => {
+export const DataSummaryTable = () => {
 
-  const [dataPerfs, setDataPerfs] = useState([]);
+  const [dataSummary, setDataSummary] = useState([]);
   const [activeProject] = useContext(ProjectContext);
   const [loadingTable, setLoadingTable] = useState('enabled');
   const navigate = useNavigate();
 
-  const getPerfs = async () =>{
-    const res = await fetch(API + '/resume/' + localStorage.getItem('project'));
+  const getSummary = async () =>{
+    const res = await fetch(API + '/summary/' + localStorage.getItem('project'));
     const data = await res.json();
-    setDataPerfs(data);
+    setDataSummary(data);
     setLoadingTable('disabled');
   }
 
@@ -26,7 +26,7 @@ export const DataPerfTable = () => {
     
     if(activeProject !== 'None'){
 
-      getPerfs();
+      getSummary();
 
     } else {
       Swal.fire({
@@ -43,24 +43,23 @@ export const DataPerfTable = () => {
 
   const columns = [
     { field: 'id', hide: true},
-    { field: 'Column', headerName: "Columna", width: 180},
-    { field: "count", headerName: "Registros", width: 100 },
-    { field: "max", headerName: "Valor Máximo", width: 130 },
-    { field: "min", headerName: "Valor Mínimo", width: 130 },
-    { field: "mean", headerName: "Media", width: 140 },
-    { field: "std", headerName: "Desviación Estándar", width: 150 },
-    { field: "25%", headerName: "Primer Cuartil", width: 130 },
-    { field: "50%", headerName: "Segundo Cuartil", width: 130 },
-    { field: "75%", headerName: "Tercer Cuartil", width: 130 },
+    { field: 'Column', headerName: "Columna", width: 210},
+    { field: "Data Type", headerName: "Tipo de Dato", width: 110 },
+    { field: "Max Length", headerName: "Longitud Máxima", width: 140 },
+    { field: "Max Value", headerName: "Valor Máximo", width: 180 },
+    { field: "Min Length", headerName: "Longitud Mínima", width: 140 },
+    { field: "Min Value", headerName: "Valor Mínimo", width: 180 },
+    { field: "Nulls", headerName: "Valores Nulos", width: 130 },
+    { field: "Null Count", headerName: "Conteo de Nulos", width: 130 },
   ];
 
   return(
       <div className="datatable">
           <div className="top">
-            <h1 className="title">Resumen de Datos</h1>
+            <h1 className="title">Sumario de Datos</h1>
           </div>
           <DataGrid
-          rows={dataPerfs}
+          rows={dataSummary}
           columns={columns}
           pageSize={9}
           rowsPerPageOptions={[9]}

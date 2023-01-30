@@ -26,7 +26,7 @@ export const Export = () => {
             projectName: project,
             fileType: fileType,
             enc: enc,
-            outputName: outputName + '_' + localStorage.getItem('email')
+            outputName: outputName
         }
         console.log(ExportJSON)
 

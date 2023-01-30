@@ -33,7 +33,7 @@ export const FileMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                            <button className="addButton">Ver layouts</button>
+                            <Link to={'layouts/' + localStorage.getItem('project')}><button className="addButton">Ver layouts</button></Link>
                         </div>
                     </div>
                 </div>
@@ -47,7 +47,7 @@ export const FileMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                        <Link to={'/filemenu/rules/' + localStorage.getItem('project')}><button className="addButton">Ver Reglas</button></Link>
+                        <Link to={'rules/' + localStorage.getItem('project')}><button className="addButton">Ver Reglas</button></Link>
                         </div>
                     </div>
                     <div className="right none"></div>

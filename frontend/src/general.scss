@@ -607,10 +607,21 @@
             &.flowname{
                 flex-direction: column;
 
+                textarea{
+                    width: 100%;
+                    padding: 5px;
+                    border: none;
+                    border: 1px solid gray;
+                }
+
                 .ruletitle{
                     font-size: 18px;
                     font-weight: 800;
                     margin-bottom: 5px;
+                }
+
+                .ruleselect{
+                    width: 30%;
                 }
 
                 .parambox{
@@ -632,6 +643,99 @@
                 &.none{
                     display: none;
                 }
+            }
+
+            &.rulename{
+                display: flex;
+                justify-content: space-between;
+
+                .ruleinfo{
+                    width: 80%;
+                }
+
+                .ruletitle{
+                    font-size: 18px;
+                    font-weight: 800;
+                    margin-bottom: 5px;
+                }
+
+                .ruleselect{
+                    width: 80%;
+                }
+
+                .parambox{
+                    margin-top: 0px;
+                    margin-bottom: 10px;
+                    border: none;
+                    border-bottom: 1px solid gray;
+                    width: 80%;
+                    outline: none;
+
+                    &::placeholder{
+                        font-size: 14px;
+                        color: gray;
+                    }
+                }
+            }
+
+            &.rule{
+                display: flex;
+                flex-direction: column;
+                
+                .ruleparams{
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+
+                    .ruleinfo{
+                        width: 80%;
+                    }
+    
+                    .ruletitle{
+                        font-size: 18px;
+                        font-weight: 800;
+                        margin-bottom: 5px;
+                    }
+    
+                    .ruleselect{
+                        width: 80%;
+                    }
+    
+                    .parambox{
+                        margin-top: 0px;
+                        margin-bottom: 10px;
+                        border: none;
+                        border-bottom: 1px solid gray;
+                        width: 80%;
+                        outline: none;
+    
+                        &::placeholder{
+                            font-size: 14px;
+                            color: gray;
+                        }
+                    }
+    
+                    .dynamicButtons{
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 10px;
+    
+                        button{
+                            width: 30px;
+                            height: 30px;
+                            border: none;
+                            background-color: teal;
+                            color: #FFF;
+                            font-weight: bold;
+                            cursor: pointer;
+                            font-size: 20px;
+                            text-align: center;
+                        }
+                    }
+                }
+
             }
 
             &.flow{

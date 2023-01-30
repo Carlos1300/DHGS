@@ -14,6 +14,7 @@ app = Flask(__name__)
 
 ## MONGO Connection
 app.config['MONGO_URI']='mongodb://carav:avicar13@localhost:27017'
+app.json.ensure_ascii = False
 mongo = PyMongo(app)
 MONGO_CLIENT = MongoClient('mongodb://carav:avicar13@localhost:27017')
 
@@ -174,7 +175,7 @@ def add_project(email):
     if not add_project_request['name'] in MONGO_CLIENT.list_database_names():
         dhRepository.create_database(MONGO_CLIENT, add_project_request['name'])
     
-    doc = dhRepository.BuscarRegistroEnBD('Projects', 'ProjectName', add_project_request['name'])
+    doc = dhRepository.BuscarRegistroEnBD('Projects', 'ProjectName', add_project_request['name'], 'datahub')
     if doc == None:
         new_project = MONGO_CLIENT['datahub']['Projects'].insert_one({
         "ProjectName": add_project_request['name'],
@@ -188,6 +189,7 @@ def add_project(email):
     
     else:
         msg = 'Se ha actualizado con éxito la fuente de datos con el ID de objeto'
+        print(doc)
         project_id = str(doc['_id'])
         
     dhRepository.EstablecerBDProjecto(add_project_request['name'])
@@ -199,8 +201,8 @@ def add_project(email):
         'objID': project_id
         })
 
-@app.route('/getDataPerf/<email>/<project>', methods=['GET'])
-def get_data_perfs(email, project):
+@app.route('/resume/<project>', methods=['GET'])
+def get_data_perfs(project):
     data_perfs= MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Resume'})
     
     resume_cols = [data_perfs['schema']['fields'][x]['name'] for x in range(len(data_perfs['schema']['fields']))]
@@ -221,6 +223,26 @@ def get_data_perfs(email, project):
         id += 1
     
     return jsonify(data_resume)
+
+@app.route('/summary/<project>', methods=['GET'])
+def get_data_summary(project):
+    doc = MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Data Summary'}, {'_id': 0, 'name': 0})
+    columns = list(doc.keys())
+
+    data_summary = []
+    temp_dict = {}
+    id = 1
+
+    for col in columns:
+        temp_dict.update({'Column': col})
+        temp_dict.update({'id': id})
+        for key in list(doc[col].keys()):
+            temp_dict.update({key: doc[col][key]})
+        dict_data = temp_dict.copy()
+        data_summary.append(dict_data)
+        id += 1
+
+    return jsonify(data_summary)
 
 @app.route('/getDataLoads/<email>/<project>', methods=['GET'])
 def get_data_loads(email, project):
@@ -309,35 +331,26 @@ def catalogs(email):
 def rules(project):
     
     if request.method == 'POST':
-        add_catalog_request = {
-        "file": request.files['dataSource'],
-        "name": request.form['pName'],
-        "source_type": request.form['fileType'],
-        "separator": request.form['sep'],
-        "encoding": request.form['enc'],
-        "sheet_name": request.form['sheet'],
-        "columns": request.form['columns'],
-        "description": request.form['desc'],
-        "project": project
-        }
-        
-        doc = dhRepository.BuscarRegistroEnBD('Catalogos', 'CatalogName', add_catalog_request['name'])
+        rules_req = request.get_json()
+          
+        doc = MONGO_CLIENT[project]['Rules'].find_one({'RuleName': rules_req['ruleName'].upper()})
         
         if doc == None:
-            DatahubEx.load_catalog(add_catalog_request)
-            msg = 'Catálogo insertado'
+            dhRepository.EstablecerBDProjecto(project)
+            DatahubEx.generate_rules(rules_req)
+            msg = 'Regla insertada'
+            return(jsonify({'msg': msg})), 200
             
         else:
-            msg = 'Se ha actualizado con éxito la fuente de datos con el ID de objeto'
-        
-        return(jsonify({'msg': msg}))
+            msg = 'Un conjunto de reglas con este nombre ya se encuentra registrado'
+            return(jsonify({'msg': msg})), 401
 
     
     elif request.method == 'DELETE':
         delete_id = request.get_json()
-        MONGO_CLIENT['datahub']['Catalogos'].delete_one({'_id': ObjectId(delete_id)})
+        MONGO_CLIENT[project]['Rules'].delete_one({'_id': ObjectId(delete_id)})
     
-        return jsonify({"msg": "El catálogo ha sido eliminado"})
+        return jsonify({"msg": "El conjunto de reglas ha sido eliminado"})
     
     else:
         project_rules = []
@@ -357,6 +370,48 @@ def rules(project):
         id+=1
         
         return jsonify(project_rules)
+    
+@app.route('/layouts/<project>', methods=['POST', 'GET', 'DELETE'])
+def layouts(project):
+    
+    if request.method == 'POST':
+        layout_req = request.get_json()
+        
+        doc = MONGO_CLIENT[project]['Layouts'].find_one({'LayoutName': layout_req['layoutName'].upper()})
+        
+        if doc == None:
+            dhRepository.EstablecerBDProjecto(project)
+            DatahubEx.generate_layout(layout_req)
+            msg = 'Layout insertado'
+            return(jsonify({'msg': msg})), 200
+            
+        else:
+            msg = 'Un layout con este nombre ya se encuentra registrado'
+            return(jsonify({'msg': msg})), 401
+    
+    elif request.method == 'DELETE':
+        delete_id = request.get_json()
+        MONGO_CLIENT[project]['Layouts'].delete_one({'_id': ObjectId(delete_id)})
+    
+        return jsonify({"msg": "El layout ha sido eliminado"})
+    
+    else:
+        project_layouts = []
+        
+        id = 1
+        
+        for doc in MONGO_CLIENT[project]['Layouts'].find({}):
+            
+            project_layouts.append({
+                'id': id,
+                '_id': str(ObjectId(doc['_id'])),
+                'name': doc['LayoutName'],
+                'description': doc['LayoutDesc']
+            })
+
+        id+=1
+        
+        return jsonify(project_layouts)
         
 
 
@@ -477,11 +532,13 @@ def apply_flow(project):
     flow_id = request.get_json()
     
     source_id = MONGO_CLIENT[project]['DataLoads'].find_one()['_id']
+    encoding = MONGO_CLIENT[project]['DataSource_Loads'].find_one()['Encoding']
     
     args = {
         'project_name': project,
         'flow_id': flow_id,
-        'source_id': source_id
+        'source_id': source_id,
+        'encoding': encoding
     }
     
     # Se verifica que se haya especificado un proyecto válido
@@ -503,7 +560,6 @@ def apply_flow(project):
     
     # Se ejecutan todas las operaciones del flujo
     for step in dataflow['Operations']:
-
         if step['name'] in dhOperations.__dict__:
             funcion = dhOperations.__dict__[step['name']]
             if callable(funcion):
@@ -546,6 +602,7 @@ def export_data(email):
     
     register_count = dhRepository.register_count('DataCleaned')
     if register_count > 1:
+        dictObj = dhRepository.obtener_atributos_prj_many('DataCleaned', ['schema','data'])
         dtfrm = dhRepository.join_chunk_data('DataCleaned')
     else:
         dictObj = dhRepository.obtener_atributos_por_docid_prj('DataCleaned', source_id, ['schema','data'])

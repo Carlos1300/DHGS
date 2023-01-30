@@ -45,6 +45,26 @@ def BuscarRegistroEnBD(Coleccion, Llave, Valor, NombreBD='datahub'):
     doc = local_mongo_client[NombreBD][Coleccion].find_one({Llave: Valor})
     return doc
 
+def BuscarCatalogoEnBD(Coleccion, Llave, Valor, NombreBD='datahub'):
+    
+    """
+    Función encargada de buscar y encontrar el primer valor que se encuentre y que
+    sea igual a la consulta que se haga.
+
+    Argumentos:
+            Coleccion (str) un string que corresponde a la colección a la que se accederá.
+            Llave (str) un string que corresponde al nombre del registro que buscamos.
+            Valor (str) un string que nos indica el valor que se está buscando.
+            NombreBD (str) que nos indica la base de datos a la que se conectará la persona.
+            
+    Regresa:
+            doc un diccionario conteniendo el primer resultado que se encontró que concuerda
+            con la consulta que se hizo.
+    """
+    
+    doc = local_mongo_client[NombreBD][Coleccion].find_one({Llave: Valor}, {'_id': 0, 'data': 1, 'schema': 1})
+    return doc
+
 
 def BuscarDocumentoBDProyecto(Coleccion, Llave, Valor):
     
@@ -101,7 +121,6 @@ def InsertarDocumentoBDProyecto(Coleccion, Documento):
     Regresa:
             doc un dictionary que contiene el nuevo objeto que se agregó.
     """
-    
     
     nuevo = db_Proyecto[Coleccion].insert_one(Documento)
     doc = db_Proyecto[Coleccion].find_one({'_id': nuevo.inserted_id})
@@ -211,6 +230,28 @@ def obtener_atributos_por_docid_prj(Coleccion, idDoc, Campos_List):
 
     return doc
 
+def obtener_atributos_prj_many(Coleccion, Campos_List):
+    """
+    Busca en la Colección indicada, con base al idDoc y devuelve los Campos
+    :param Coleccion: string
+    :param idDoc: string
+    :param idDoc: list of strings con los nombres de los campos
+    :return: Documento (dict) con los Campos especificados
+    """
+
+    campos_dict = { name : 1 for name in Campos_List  }
+
+    if '_id' not in Campos_List:
+        campos_dict['_id'] = 0
+
+    complete_doc = []
+    doc = db_Proyecto[Coleccion].find({}, campos_dict)
+    
+    for reg in doc:
+        complete_doc.append(reg)
+    
+
+    return complete_doc
 
 def obtener_atributos_por_filtro_prj(Coleccion, filtroDict, Campos_List):
     """

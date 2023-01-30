@@ -2,6 +2,7 @@ import React from "react";
 import "../general.scss";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
+import { Link } from "react-router-dom";
 
 export const PerfMenu = () =>{
     return(
@@ -21,7 +22,7 @@ export const PerfMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                            <button className="addButton">Ver resumen</button>
+                            <Link to={'resume/' + localStorage.getItem('project')}><button className="addButton">Ver resumen</button></Link>
                         </div>
                     </div>
                     <div className="right">
@@ -33,7 +34,7 @@ export const PerfMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                            <button className="addButton">Ver sumario</button>
+                            <Link to={'summary/' + localStorage.getItem('project')}><button className="addButton">Ver sumario</button></Link>
                         </div>
                     </div>
                 </div>

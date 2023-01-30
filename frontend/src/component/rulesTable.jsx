@@ -10,18 +10,18 @@ const API = process.env.REACT_APP_API;
 
 export const RulesTable = () => {
 
-  const [catalogs, setCatalogs] = useState([]);
+  const [rules, setRules] = useState([]);
   const [loadingTable, setLoadingTable] = useState('enabled');
 
-  const getCatalogs = async () =>{
+  const getRules = async () =>{
     const res = await fetch(API + '/rules/' + localStorage.getItem('project'));
     const data = await res.json();
-    setCatalogs(data);
+    setRules(data);
     setLoadingTable('disabled')
   }
 
   useEffect(() => {
-    getCatalogs();
+    getRules();
   }, [])
 
   const copyName = async () =>{
@@ -43,9 +43,9 @@ export const RulesTable = () => {
     })
   }
 
-  const deleteCatalog = async (id, objId) => {
+  const deleteRule = async (id, objId) => {
 
-    const res = await fetch(API + '/catalogs/' + localStorage.getItem('email'),{
+    const res = await fetch(API + '/rules/' + localStorage.getItem('project'),{
       method: 'DELETE',
       headers:{
           "Access-Control-Allow-Origin": "*",
@@ -86,8 +86,8 @@ export const RulesTable = () => {
 
       id = id - 1
 
-      setCatalogs((prevCatalogs) =>
-      prevCatalogs.filter((_, index) => index !== id)
+      setRules((prevRules) =>
+      prevRules.filter((_, index) => index !== id)
       );
     }
   }
@@ -102,7 +102,7 @@ export const RulesTable = () => {
       return(
         <div className="cellAction" key={params.row._id}>
           <CopyToClipboard text={params.row.name}><div className="copyButton" onClick={copyName}>Copiar</div></CopyToClipboard>
-          <div className="deleteButton" onClick={() => deleteCatalog(params.row.id, params.row._id)}>Eliminar</div>
+          <div className="deleteButton" onClick={() => deleteRule(params.row.id, params.row._id)}>Eliminar</div>
             
         </div>
       )
@@ -113,10 +113,10 @@ export const RulesTable = () => {
       <div className="datatable">
         <div className="manageTable">
           <h1 className="title">Reglas</h1>
-          <Link to="/filemenu/catalogs/new"><div className="addButton">Agregar Datos</div></Link>
+          <Link to="new"><div className="addButton">Agregar Reglas</div></Link>
         </div>
           <DataGrid
-          rows={catalogs}
+          rows={rules}
           columns={columns}
           getRowId={(row) => row._id}
           pageSize={9}

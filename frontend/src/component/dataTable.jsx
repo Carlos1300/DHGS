@@ -26,6 +26,16 @@ export const DataTable = () => {
     await setActiveProject(name);
     localStorage.setItem('project', name);
     localStorage.setItem('projectObjID', id);
+
+    await fetch(API + '/project/' + localStorage.getItem('project'),{
+      method: 'POST',
+      headers:{
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+      },
+      body: JSON.stringify(name),
+  });
+
   }
 
   const deactivateProject = async () =>{

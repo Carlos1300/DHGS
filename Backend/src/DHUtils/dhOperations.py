@@ -19,6 +19,7 @@ import unidecode
 from datetime import date
 import datetime
 import openpyxl
+from bson.objectid import ObjectId
 # import xlsxwriter
 
 ## Todas las operaciones deben establecer el valor del diccionario '' a True o false
@@ -50,6 +51,8 @@ def save_source_main (datasources, mainParams, stepdict = None ):
     Función para guardar los datos base o main que se utilizarán.
     
     """
+    MONGO_BYTES = 16793598
+    byte_size = dhUtilities.get_byte_size(datasources['_main_ds'], mainParams['encoding'])
     
     if datasources['chunks'] > 1:
         df_chunks = dhUtilities.chunk_partitioning_save(datasources['_main_ds'], datasources['chunks'])
@@ -58,11 +61,19 @@ def save_source_main (datasources, mainParams, stepdict = None ):
             doc = json.loads(chunk.to_json(orient='table'))
             dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
         return True, datasources['_main_ds']
-
+    
+    elif byte_size > MONGO_BYTES:
+        df_chunks = dhUtilities.chunk_partitioning(byte_size, datasources['_main_ds'])
+        dhRep.delete_chunk_data(stepdict['collection'])
+        for chunk in df_chunks:
+            doc = json.loads(chunk.to_json(orient='table'))
+            dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
+        return True, datasources['_main_ds']
+    
     else:
         doc =  json.loads(datasources['_main_ds'].to_json(orient='table'))
         doc['_id'] = ObjectId(mainParams['source_id'])
-        dhRep.EliminarDocumentoProyecto (stepdict['collection'], doc)
+        dhRep.delete_chunk_data(stepdict['collection'])
         dhRep.InsertarDocumentoBDProyecto (stepdict['collection'], doc)
         return True, datasources['_main_ds']
 
@@ -85,15 +96,10 @@ def validate_sourcecolumns_vs_layout (datasources, mainParams, stepdict = None):
     mapeoColumnas = dict()
     dtFrDatos = datasources['_main_ds']
     
-    if 'layout_name_validate' in stepdict.keys():
-        layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name_validate'])
-    elif 'layou_name_extract' in stepdict.keys():
-        layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name_extract'])
-    else:
-        layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'name' , stepdict['layout_name_datatypes'])
+    layout = dhRep.BuscarDocumentoBDProyecto('Layouts', 'LayoutName' , stepdict['layout_name_validate'])
 
-    for col in layout['columns']:
-        if layout['header']==True:
+    for col in layout['data']:
+        if layout['Header']==True:
             for al in col['alias_source']:
                 if al in dtFrDatos.columns:
                     mapeoColumnas[ col['column_name'] ] = al
@@ -108,7 +114,7 @@ def validate_sourcecolumns_vs_layout (datasources, mainParams, stepdict = None):
 
     if mapeoOk:
         stepdict['execute_status'] = 'Ejecution.OK'
-        datasources['_main_layout'] = layout
+        datasources['_main_layout'] = layout['data']
     else:
         nombres_columnas_error = ''
         for col in mapeoColumnas:
@@ -129,9 +135,9 @@ def extract_layout_from_source (datasources, mainParams, stepdict = None):
             return False, None
     
     layout = datasources['_main_layout']
-    nombresColumnas =  [ column['column_name_source'] for column in layout['columns'] ]
+    nombresColumnas =  [ column['column_name_source'] for column in layout]
     dtFrDatos = pd.DataFrame( dtFrDatos[ nombresColumnas] )
-    dtFrDatos.rename (columns={ column['column_name_source'] : column['column_name'] for column in layout['columns'] }, inplace=True)
+    dtFrDatos.rename (columns={ column['column_name_source'] : column['column_name'] for column in layout }, inplace=True)
     datasources['_main_ds'] = dtFrDatos
 
     return True, dtFrDatos
@@ -146,7 +152,7 @@ def validate_vs_layout_datatypes (datasources, mainParams, stepdict = None):
             return False, None
     
     layout = datasources['_main_layout']
-    for col in layout['columns']:
+    for col in layout:
         resul = dtFrDatos[col['column_name']].apply(
             lambda cl: dhUtilities.ValidarFormatoObjeto(cl, col['data_type'], col['allow_null']))
 
@@ -171,8 +177,8 @@ def validate_numeric_range (datasources, mainParams, stepdict = None):
     dtfNoValidos=dtFrDatos[nombre_columna].copy()
     dtfNoValidos[:] = False
 
-    filtro={ 'rule_type':'RANGO NUMERICO','rule_name': stepdict['rule_name_valnr'] }
-    ReglasDict = dhRep.obtener_atributos_por_filtro_prj('Rules', filtro, ['min_value', 'max_value'])
+    filtro={ 'RuleName' : stepdict['rule_name_valnr'] }
+    ReglasDict = dhRep.obtener_atributos_por_filtro_prj('Rules', filtro, ['data'])[0]['data']
 
     for regla in ReglasDict:
         Minimo = regla['min_value']
@@ -180,31 +186,20 @@ def validate_numeric_range (datasources, mainParams, stepdict = None):
         dtfNoValidos = (dtFrDatos[nombre_columna] < Minimo) | dtfNoValidos
         dtfNoValidos = (dtFrDatos[nombre_columna] > Maximo) | dtfNoValidos
 
-    dtfNoValidos = dtFrDatos[dtfNoValidos[:]==True][nombre_columna].unique()
+    dtfNoValidos = ['R' if x == False else 'OR' for x in dtfNoValidos]
+    
+    dtFrDatos[stepdict['column_src_valnr'] + '_numeric_range'] = dtfNoValidos
 
-    if len (dtfNoValidos ) > 0:
-        stepdict['execute_status'] = 'Ejecution.ERROR'
-        stepdict['execute_error_text'] = '\nValores en la Columna {} no cumplen con el rango ({}-{}) >>> {}'.format(nombre_columna, Minimo, Maximo, dtfNoValidos)
-        return False, None
-
-    return True, None
+    return True, dtFrDatos
 
 def validate_exist_in_catalog (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
-    dictObj = dhRep.obtener_atributos_por_docid_prj('MasterDataCatalog', stepdict['catalog_id'], ['schema','data'] )
+    dictObj = dhRep.BuscarCatalogoEnBD('Catalogos', 'CatalogName', stepdict['catalog_name_excat'])
     valores_catalogo = pd.read_json(json.dumps(dictObj), orient='table')
-    valores_unicos = dtFrDatos[stepdict['column_src']].unique()
-    valores_catalogo = valores_catalogo[stepdict['key_column_name']].to_list()
-    Valores_no_existentes = list()
+    valores_fuente = dtFrDatos[stepdict['column_src_excat']].to_list()
+    valores_catalogo = valores_catalogo[stepdict['key_column_name_excat']].to_list()
 
-    for valor in valores_unicos:
-        if valor not in valores_catalogo:
-            Valores_no_existentes.append(valor)
-
-    if len(Valores_no_existentes) > 0:
-        stepdict['execute_status'] = 'Ejecution.ERROR'
-        stepdict['execute_error_text'] = '\nValores en la Columna {} no existen en el catálogo {}: {}'.format(stepdict['column_src'], stepdict['catalog_name'],  Valores_no_existentes)
-        return False, None
+    dtFrDatos['exist_catalog'] = ['E' if valor in valores_catalogo else 'NE' for valor in valores_fuente]
 
     return True, None
 
@@ -239,13 +234,13 @@ def extract_words_by_position (datasources, mainParams, stepdict = None):
 
     def fnConcat (arr, ini, fin, sep):
         x = ''
-        fin =  (fin if fin < len(arr) else len(arr))+1
+        fin =  (fin if len(fin) < len(arr) else len(arr))+1
         for i in range(ini, fin):
             x+= arr[i] + sep
         return x
 
     ser_Valores = dtFrDatos[stepdict['column_src_exwrd']].str.split(re_Delimitador)
-    dtFrDatos[stepdict['column_dest_exwrd']] = ser_Valores.apply(lambda arr: fnConcat(arr,ini,fin, stepdict['separator'])  )
+    dtFrDatos[stepdict['column_dest_exwrd']] = ser_Valores.apply(lambda arr: fnConcat(arr,ini,fin, stepdict['separator_exwrd'])  )
 
     return True, None
 
@@ -264,27 +259,34 @@ def validar_fonetico(datasources, mainParams, stepdict = None):
         DataFrameResultado: Dataframe con la columna de llaves añadida.
 
     """
-    df_main = datasources['_main_ds']
     origen = stepdict['col_origen_valfon']
-    result = pd.DataFrame()
-    result[origen] = df_main[origen]
-    result["soundex"] = result[origen].apply(lambda x: jellyfish.soundex(x))
-    result['freq soundex'] = result['soundex'].apply(
-      lambda x: result.soundex.str.contains(x).sum()
-    )
-    result["soundex dist%"] = (result["freq soundex"] / len(df_main.index))*100
+    fon = dhRep.BuscarDocumentoBDProyecto('DataPerf', 'name', 'Foneticos - ' + origen)
+    if fon == None: 
 
-    result["metaphone"] = result[origen].apply(lambda x: jellyfish.metaphone(x))
-    result['freq metaphone'] = result['metaphone'].apply(
-      lambda x: result.metaphone.str.contains(x).sum()
-    )
-    result["metaphone dist%"] = (result["freq metaphone"] / len(df_main.index))*100
-    result = result.drop_duplicates()
+        df_main = datasources['_main_ds']
+        
+        result = pd.DataFrame()
+        result[origen] = df_main[origen]
+        result["soundex"] = result[origen].apply(lambda x: jellyfish.soundex(x))
+        result['freq soundex'] = result['soundex'].apply(
+        lambda x: result.soundex.str.contains(x).sum()
+        )
+        result["soundex dist%"] = (result["freq soundex"] / len(df_main.index))*100
+        result["metaphone"] = result[origen].apply(lambda x: jellyfish.metaphone(x))
+        result['freq metaphone'] = result['metaphone'].apply(
+        lambda x: result.metaphone.str.contains(x).sum()
+        )
+        result["metaphone dist%"] = (result["freq metaphone"] / len(df_main.index))*100
+        result = result.drop_duplicates()
+        
+        doc = json.loads(result.to_json(orient='table'))
+        doc['name'] = "Foneticos - " + origen
     
-    doc = json.loads(result.to_json(orient='table'))
-    doc['name'] = "Foneticos - " + origen
-    dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
-    return True, result
+        dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
+        return True, result
+    
+    else:
+        return True, fon['_id']
 
 
 def windowKey(datasources, mainParams, stepdict = None):
@@ -354,10 +356,10 @@ def calculate_expression (datasources, mainParams, stepdict = None):
 
     """
     df_main = datasources['_main_ds']
-    value_1 = stepdict['value_1']
-    value_2 = stepdict['value_2']
-    dest = stepdict['col_dest']
-    oper = stepdict['operator']
+    value_1 = stepdict['value_1_calcexp']
+    value_2 = stepdict['value_2_calcexp']
+    dest = stepdict['col_dest_calcexp']
+    oper = stepdict['operator_calcexp']
     
     if df_main[value_1].dtype.name == "object" or df_main[value_2].dtype.name == "object":
         return False, df_main
@@ -553,12 +555,20 @@ def get_column_type(datasources, mainParams, stepdict = None):
             }
         
         data_info[col] = col_info
+        
     
-    print(json.dumps(data_info))
     doc = json.loads(json.dumps(data_info))
     doc['name'] = "Data Summary"
-    dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
-    return True, col_info
+    
+    summary = dhRep.BuscarDocumentoBDProyecto('DataPerf', 'name', 'Data Summary')
+    
+    if summary == None:
+        dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
+        return True, col_info
+    else:
+        dhRep.EliminarDocumentoProyecto('DataPerf', summary)
+        dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
+        return True, summary['_id']
     
 def get_substring(datasources, mainParams, stepdict = None):
     """
@@ -754,6 +764,7 @@ def num_to_bool(datasources, mainParams, stepdict= None):
 	return True, df_main
 
 def trim_col(datasources, mainParams, stepdict= None):
+    
     def rm_blanks(dato):
         dato = str(dato)
         if stepdict['all'].lower() == 'no':
@@ -774,23 +785,26 @@ def trim_col(datasources, mainParams, stepdict= None):
     
     return True, df_main
 
-def rm_except(datasources, mainParams, stepdict= None):
-	
-    def remove(dato):
-        
-        exclude = [x.strip() for x in stepdict['excluded_chars'].split(',')]
-        
+def replace_char_exc(datasources, mainParams, stepdict= None):
+    
+    def rep(dato):
         dato = str(dato)
+        exc = [x.strip() for x in stepdict['excluded_chars'].split(',')]
+        
         if not dato == "" and str(dato[0]).isalpha():
-            dato = dato.replace(dato[0], "")
+            dato = dato.replace(dato[0], stepdict['replace_char'])
         for c in dato:
-            if c.isalpha() and not c in exclude:
-                dato = dato.replace(c, "")
+            if c.isalpha() and not c in exc:
+                dato = dato.replace(c, stepdict['replace_char'])
         return dato
     
     df_main = datasources['_main_ds']
-    df_main[stepdict['apply_col_rmexc']] = df_main[stepdict['apply_col_rmexc']].apply(lambda x: remove(x))
     
+    columns = [x.strip() for x in stepdict['apply_cols_reexchar'].split(',')]
+    
+    for col in columns:
+        df_main[col] = df_main[col].apply(lambda x: rep(x))
+        
     return True, df_main
 
 def rm_accents(datasources, mainParams, stepdict= None):

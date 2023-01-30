@@ -191,6 +191,45 @@ def load_catalog(args):
             doc['User'] = args['user']
             doc['Description'] = args['description']
             dhRep.insert_document_db('Catalogos', doc)
+            
+def generate_rules(args):
+    rules_df = pd.DataFrame()
+    
+    rules_df['search_value'] = [args['values'][x]['originalValue'] for x in range(len(args['values']))]
+    rules_df['change_value'] = [args['values'][x]['changeValue'] for x in range(len(args['values']))]
+    
+    doc = json.loads(rules_df.to_json(orient='table'))
+    doc['RuleName'] = args['ruleName'].upper()
+    doc['RuleType'] = args['ruleType']
+    doc['RuleDesc'] = args['ruleDesc']
+    
+    dhRep.InsertarDocumentoBDProyecto('Rules', doc)
+    
+def generate_layout(args):
+    options_count = len(args['options'])
+    
+    layout_df = pd.DataFrame()
+    
+    alias = []
+    
+    for i in range(options_count):
+        split_alias = [x.strip() for x in args['options'][i]['aliasSource'].split(',')]
+        alias.append(split_alias)
+    
+    layout_df['column_order'] = [int(args['options'][x]['colOrder']) - 1 for x in range(options_count)]
+    layout_df['column_name'] = [args['options'][x]['colName'] for x in range(options_count)]
+    layout_df['column_position_source'] = [int(args['options'][x]['colPosition']) for x in range(options_count)]
+    layout_df['data_type'] = [args['options'][x]['dataType'] for x in range(options_count)]
+    layout_df['allow_null'] = [True if args['options'][x]['allowNull'] == 'Yes' else False for x in range(options_count)]
+    layout_df['alias_source'] = [x for x in alias]
+    
+    doc = json.loads(layout_df.to_json(orient='table'))
+    doc['LayoutName'] = args['layoutName'].upper()
+    doc['Header'] = True if args['header'] == 'Yes' else False
+    doc['LayoutDesc'] = args['layoutDesc']
+    
+    dhRep.InsertarDocumentoBDProyecto('Layouts', doc)
+        
 
 
 #

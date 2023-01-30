@@ -98,7 +98,7 @@ export const Sidebar = () => {
                 activeProject !== 'None' ? (
                   <div>
                     <p className="title">HERRAMIENTAS DE PROYECTO</p>
-                    <Link to= '/dataperf'>
+                    <Link to= '/perfmenu'>
                       <li>
                         <DatasetIcon className="icon"/>
                         <span>Datos Perfilados</span>

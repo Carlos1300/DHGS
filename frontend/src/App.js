@@ -19,6 +19,11 @@ import { FileMenu } from "./component/fileMenu";
 import { ListCatalogs } from "./component/listCatalogs";
 import { NewCatalog } from "./component/newCatalog";
 import { ListRules } from "./component/listRules";
+import { NewRule } from "./component/newRule";
+import { ListPerf } from "./component/listPerf";
+import { ListSummary } from "./component/listSummary";
+import { ListLayouts } from "./component/listLayouts";
+import { NewLayout } from "./component/newLayout";
 
 function App() {
 
@@ -53,6 +58,7 @@ function App() {
                 </RequireAuth>
                 }
               />
+
               {/* FILE MENU LINKS */}
               <Route path="filemenu">
                 <Route index element={<RequireAuth><FileMenu /></RequireAuth>} />
@@ -66,18 +72,39 @@ function App() {
                     }
                   />
                 </Route>
-                <Route path="rules/:project" element={<RequireAuth><ListRules /></RequireAuth>} />
+                <Route path="rules/:project">
+                  <Route index element={<RequireAuth><ListRules /></RequireAuth>} />
+                  <Route path="new" 
+                    element={
+                    <RequireAuth>
+                      <NewRule />
+                    </RequireAuth>
+                    }
+                  />
+                </Route>
+                <Route path="layouts/:project">
+                  <Route index element={<RequireAuth><ListLayouts /></RequireAuth>} />
+                  <Route path="new" 
+                    element={
+                    <RequireAuth>
+                      <NewLayout />
+                    </RequireAuth>
+                    }
+                  />
+                </Route>
               </Route>
               
+              {/* DATAPERF LINKS */}
+              <Route path="perfmenu">
+                    <Route index element={<RequireAuth><PerfMenu /></RequireAuth>} />
+                    <Route path="resume/:project">
+                      <Route index element={<RequireAuth><ListPerf /></RequireAuth>} />
+                    </Route>
+                    <Route path="summary/:project">
+                      <Route index element={<RequireAuth><ListSummary /></RequireAuth>} />
+                    </Route>
+              </Route>
 
-              <Route 
-                path="/dataperf" 
-                element={
-                <RequireAuth>
-                  <PerfMenu />
-                </RequireAuth>
-                }
-              />
               <Route 
                 path="/dataloads" 
                 element={

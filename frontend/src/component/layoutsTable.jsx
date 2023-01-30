@@ -8,20 +8,20 @@ import Swal from 'sweetalert2'
 
 const API = process.env.REACT_APP_API;
 
-export const CatalogsTable = () => {
+export const LayoutsTable = () => {
 
-  const [catalogs, setCatalogs] = useState([]);
+  const [layouts, setLayouts] = useState([]);
   const [loadingTable, setLoadingTable] = useState('enabled');
 
-  const getCatalogs = async () =>{
-    const res = await fetch(API + '/catalogs/' + localStorage.getItem('email'));
+  const getLayouts = async () =>{
+    const res = await fetch(API + '/layouts/' + localStorage.getItem('project'));
     const data = await res.json();
-    setCatalogs(data);
+    setLayouts(data);
     setLoadingTable('disabled')
   }
 
   useEffect(() => {
-    getCatalogs();
+    getLayouts();
   }, [])
 
   const copyName = async () =>{
@@ -43,9 +43,9 @@ export const CatalogsTable = () => {
     })
   }
 
-  const deleteCatalog = async (id, objId) => {
+  const deleteRule = async (id, objId) => {
 
-    const res = await fetch(API + '/catalogs/' + localStorage.getItem('email'),{
+    const res = await fetch(API + '/layouts/' + localStorage.getItem('project'),{
       method: 'DELETE',
       headers:{
           "Access-Control-Allow-Origin": "*",
@@ -84,10 +84,8 @@ export const CatalogsTable = () => {
         color: '#FFF'
       })
 
-      id = id - 1
-
-      setCatalogs((prevCatalogs) =>
-      prevCatalogs.filter((_, index) => index !== id)
+      setLayouts((prevLayouts) =>
+      prevLayouts.filter((_, index) => index !== id)
       );
     }
   }
@@ -95,19 +93,13 @@ export const CatalogsTable = () => {
   const columns = [
     { field: '_id', hide: true},
     { field: 'id', headerName: 'ID', width: 50},
-    { field: 'name', headerName: "Nombre del Catálogo", width: 250},
-    { field: 'description', headerName: "Descripción", width: 750},
+    { field: 'name', headerName: "Nombre de la Regla", width: 300},
+    { field: 'description', headerName: "Descripción", width: 700},
     { filed: "action", headerName: "Acciones", width: 160, renderCell:(params)=>{
       return(
         <div className="cellAction" key={params.row._id}>
           <CopyToClipboard text={params.row.name}><div className="copyButton" onClick={copyName}>Copiar</div></CopyToClipboard>
-          {
-            params.row.user === 'Public' ? (
-              <></>
-            ) : (
-              <div className="deleteButton" onClick={() => deleteCatalog(params.row.id, params.row._id)}>Eliminar</div>
-            )
-          }
+          <div className="deleteButton" onClick={() => deleteRule(params.row.id, params.row._id)}>Eliminar</div>
             
         </div>
       )
@@ -117,11 +109,11 @@ export const CatalogsTable = () => {
   return(
       <div className="datatable">
         <div className="manageTable">
-          <h1 className="title">Catálogos</h1>
-          <Link to="/filemenu/catalogs/new"><div className="addButton">Agregar Catálogos</div></Link>
+          <h1 className="title">Layouts</h1>
+          <Link to="new"><div className="addButton">Agregar Layout</div></Link>
         </div>
           <DataGrid
-          rows={catalogs}
+          rows={layouts}
           columns={columns}
           getRowId={(row) => row._id}
           pageSize={9}

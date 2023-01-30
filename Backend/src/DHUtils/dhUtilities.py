@@ -74,7 +74,7 @@ def ValidarFormatoObjeto(objeto, tipo, nulo):
         elif tipo == 'NUMBER':
             if isinstance(objeto, float):
                 return True;
-            elif re.fullmatch(pattNumber, objeto):
+            elif re.fullmatch(pattNumber, str(objeto)):
                 return True;
         elif tipo == 'TEXT':
             return True;
