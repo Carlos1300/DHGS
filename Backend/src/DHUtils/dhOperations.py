@@ -20,6 +20,7 @@ from datetime import date
 import datetime
 import openpyxl
 from bson.objectid import ObjectId
+import time
 # import xlsxwriter
 
 ## Todas las operaciones deben establecer el valor del diccionario '' a True o false
@@ -260,31 +261,46 @@ def validar_fonetico(datasources, mainParams, stepdict = None):
 
     """
     origen = stepdict['col_origen_valfon']
+    df_main = datasources['_main_ds']
+    
+    def assign_values(x):
+        if x in count_dict.keys():
+            x = count_dict[x]
+        return x
+    
+    result = pd.DataFrame()
+    result[origen] = df_main[origen]
+    result["soundex"] = result[origen].apply(lambda x: jellyfish.soundex(x))
+    
+    count = [result['soundex'].str.contains(x).sum() for x in result['soundex'].unique()]
+    count_vals = list(zip(result['soundex'].unique(), count))
+    count_dict = {key: value for (key, value) in count_vals}
+    
+    result['freq soundex'] = result['soundex'].apply(
+    lambda x: assign_values(x)
+    )
+    
+    result["soundex dist%"] = (result["freq soundex"] / len(df_main.index))*100
+    result["metaphone"] = result[origen].apply(lambda x: jellyfish.metaphone(x))
+    
+    count = [result['metaphone'].str.contains(x).sum() for x in result['metaphone'].unique()]
+    count_vals = list(zip(result['metaphone'].unique(), count))
+    count_dict = {key: value for (key, value) in count_vals}
+    
+    result['freq metaphone'] = result['metaphone'].apply(
+    lambda x: assign_values(x)
+    )
+    
+    result["metaphone dist%"] = (result["freq metaphone"] / len(df_main.index))*100
+    result = result.drop_duplicates()
+    
+    doc = json.loads(result.to_json(orient='table'))
+    doc['name'] = "Foneticos - " + origen
+    
     fon = dhRep.BuscarDocumentoBDProyecto('DataPerf', 'name', 'Foneticos - ' + origen)
     if fon == None: 
-
-        df_main = datasources['_main_ds']
-        
-        result = pd.DataFrame()
-        result[origen] = df_main[origen]
-        result["soundex"] = result[origen].apply(lambda x: jellyfish.soundex(x))
-        result['freq soundex'] = result['soundex'].apply(
-        lambda x: result.soundex.str.contains(x).sum()
-        )
-        result["soundex dist%"] = (result["freq soundex"] / len(df_main.index))*100
-        result["metaphone"] = result[origen].apply(lambda x: jellyfish.metaphone(x))
-        result['freq metaphone'] = result['metaphone'].apply(
-        lambda x: result.metaphone.str.contains(x).sum()
-        )
-        result["metaphone dist%"] = (result["freq metaphone"] / len(df_main.index))*100
-        result = result.drop_duplicates()
-        
-        doc = json.loads(result.to_json(orient='table'))
-        doc['name'] = "Foneticos - " + origen
-    
         dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
         return True, result
-    
     else:
         return True, fon['_id']
 
@@ -392,13 +408,15 @@ def create_mask(datasources, mainParams, stepdict = None):
 def get_value_freq(datasources, mainParams, stepdict = None):
     df_main = datasources['_main_ds']
     col_src = stepdict['column_src_fqval']
-    col_id = stepdict['column_id_fqval']
+    col_id = int(stepdict['column_id_fqval'])
     separator = stepdict['separator_fqval']
     one_word = stepdict['one_word_fqval']
-    init_pos = stepdict['init_pos_fqval']
-    final_pos = None if stepdict['final_pos_fqval'] == "None" else stepdict['final_pos_fqval']
+    init_pos = int(stepdict['init_pos_fqval'])
+    
+    final_pos = None if int(stepdict['final_pos_fqval']) == "None" else int(stepdict['final_pos_fqval'])
     if final_pos != None and final_pos < init_pos:
         return False, "Posición final mayor que posición inicial."
+    
     new_column = []
     ids = []
     def iterate_words(row):
@@ -412,6 +430,12 @@ def get_value_freq(datasources, mainParams, stepdict = None):
             for x in range(2, len(words)+1):
                 new_column.append(separator.join(words[0:x]))
                 ids.append(data_id)
+                
+    def assign_values(x):
+        if x in count_dict.keys():
+            x = count_dict[x]
+        return x
+                
     df_main.apply(lambda row: iterate_words(row), axis=1)
     df_final = pd.DataFrame({
         'Phrase' : new_column,
@@ -420,15 +444,26 @@ def get_value_freq(datasources, mainParams, stepdict = None):
     df_final['Words'] = df_final['Phrase'].apply(
         lambda x: len(x.split(separator))
     )
+    
+    count = [df_final['Phrase'].str.contains(x).sum() for x in df_final['Phrase'].unique()]
+    count_vals = list(zip(df_final['Phrase'].unique(), count))
+    count_dict = {key: value for (key, value) in count_vals}
+    
     df_final['Frequency'] = df_final['Phrase'].apply(
-        lambda x: df_final.Phrase.str.contains(x).sum()
+        lambda x: assign_values(x)
     )
     df_final['Dst %'] = round(((df_final['Frequency'] / df_final.shape[0])*100), 3)
     df_final["Category"] = ""
+    
     doc = json.loads(df_final.to_json(orient='table'))
     doc['name'] = "Frequency - " + col_src
-    dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
-    return True, df_final
+    
+    freq = dhRep.BuscarDocumentoBDProyecto('DataPerf', 'name', 'Frequency - ' + col_src)
+    if freq == None: 
+        dhRep.InsertarDocumentoBDProyecto ("DataPerf", doc)
+        return True, df_final
+    else:
+        return True, freq['_id']
 
 def clean_html(datasources, mainParams, stepdict = None):
     #Se leen los valores de los parámetros.

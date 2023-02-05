@@ -250,7 +250,6 @@ def obtener_atributos_prj_many(Coleccion, Campos_List):
     for reg in doc:
         complete_doc.append(reg)
     
-
     return complete_doc
 
 def obtener_atributos_por_filtro_prj(Coleccion, filtroDict, Campos_List):

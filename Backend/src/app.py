@@ -603,6 +603,7 @@ def export_data(email):
     register_count = dhRepository.register_count('DataCleaned')
     if register_count > 1:
         dictObj = dhRepository.obtener_atributos_prj_many('DataCleaned', ['schema','data'])
+        print(len(dictObj))
         dtfrm = dhRepository.join_chunk_data('DataCleaned')
     else:
         dictObj = dhRepository.obtener_atributos_por_docid_prj('DataCleaned', source_id, ['schema','data'])
