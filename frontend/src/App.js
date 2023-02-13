@@ -24,6 +24,8 @@ import { ListPerf } from "./component/listPerf";
 import { ListSummary } from "./component/listSummary";
 import { ListLayouts } from "./component/listLayouts";
 import { NewLayout } from "./component/newLayout";
+import { ListPhonetics } from "./component/listPhonetics";
+import { ListFrequency } from "./component/listFrequency";
 
 function App() {
 
@@ -102,6 +104,12 @@ function App() {
                     </Route>
                     <Route path="summary/:project">
                       <Route index element={<RequireAuth><ListSummary /></RequireAuth>} />
+                    </Route>
+                    <Route path="phonetics/:project">
+                      <Route index element={<RequireAuth><ListPhonetics /></RequireAuth>} />
+                    </Route>
+                    <Route path="frequency/:project">
+                      <Route index element={<RequireAuth><ListFrequency /></RequireAuth>} />
                     </Route>
               </Route>
 

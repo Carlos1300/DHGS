@@ -23,6 +23,8 @@ from bson.objectid import ObjectId
 import time
 # import xlsxwriter
 
+pd.set_option('display.float_format', lambda x: '%.2f' % x)
+
 ## Todas las operaciones deben establecer el valor del diccionario '' a True o false
 ## OperaciónCorrecta = {Falso|Verdadero}
 ##
@@ -206,11 +208,11 @@ def validate_exist_in_catalog (datasources, mainParams, stepdict = None):
 
 def apply_join_from_value_vs_catalog (datasources, mainParams, stepdict = None):
     dtFrDatos = datasources['_main_ds']
-    dictObj = dhRep.obtener_atributos_por_docid_prj('MasterDataCatalog', stepdict['catalog_id'], ['schema','data'] )
+    dictObj = dhRep.BuscarCatalogoEnBD('Catalogos', 'CatalogName', stepdict['catalog_name_joincat'])
     valores_catalogo = pd.read_json(json.dumps(dictObj), orient='table')
-    dtt = valores_catalogo.set_index(stepdict['key_column_name'])
-    dataJoin = dtFrDatos.join(dtt, on=stepdict['column_src'], rsuffix='_B' )
-    dtFrDatos[stepdict['column_dest']] = dataJoin[stepdict['value_column_name']]
+    dtt = valores_catalogo.set_index(stepdict['key_column_name_joincat'])
+    dataJoin = dtFrDatos.join(dtt, on=stepdict['column_src_joincat'], rsuffix='_B' )
+    dtFrDatos[stepdict['column_dest_joincat']] = dataJoin[stepdict['value_column_name_joincat']]
     return  True, None
 
 def apply_mask (datasources, mainParams, stepdict = None):
@@ -874,17 +876,23 @@ def check_email(datasources, mainParams, stepdict= None):
             dato = dato.split(" ")[0]
             
         regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        if not (re.fullmatch(regex, dato) ):
-            dato = ""
+        
+        if not (re.fullmatch(regex, dato)):
+            valid_mail.append('NV')
+        else:
+            valid_mail.append('V')
         
         return dato
 
     df_main = datasources['_main_ds']
     
+    valid_mail = []
+    
     columns = [x.strip() for x in stepdict['apply_cols_cheml'].split(',')]
     
     for col in columns:
-        df_main[col] = df_main[col].apply(lambda x: check(x)) 
+        df_main[col] = df_main[col].apply(lambda x: check(x))
+        df_main[col + '_valid_mail'] = valid_mail
     
     return True, df_main
 

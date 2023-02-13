@@ -116,7 +116,7 @@ export const NewLayout = () =>{
                                     <input className="parambox" type="number" name="colOrder" value={val.colOrder} onChange={e => handleChangeInput(index, e)} required placeholder="Posición deseada" />
                                 </div>
                                 <div className="ruleinfo">
-                                    <p className="ruletitle">Nombre</p>
+                                    <p className="ruletitle">Nuevo nombre</p>
                                     <input className="parambox" type="text" name="colName" value={val.colName} onChange={e => handleChangeInput(index, e)} required placeholder="Nombre de columna" />
                                 </div>
                                 <div className="ruleinfo">

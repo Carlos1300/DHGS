@@ -129,7 +129,7 @@ export const New = () =>{
                                 )
 
                             }
-                            <button className="sendButton">Send</button>
+                            <button className="sendButton">Enviar</button>
                         </form>
                     </div>
                 </div>

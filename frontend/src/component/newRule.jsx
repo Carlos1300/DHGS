@@ -13,6 +13,9 @@ export const NewRule = () =>{
     const [values, setValues] = useState([
         {originalValue: '', changeValue: ''},
     ]);
+    const [range, setRange] = useState(
+        {minValue: '', maxValue: ''},
+    );
     const [description, setDescription] = useState('');
 
     const handleChangeInput = (index, event) => {
@@ -22,52 +25,99 @@ export const NewRule = () =>{
     }
 
     const handleRuleSubmit = async () => {
-        const toGoJSON = {
-            ruleName: ruleName,
-            ruleType: ruleType,
-            ruleDesc: description,
-            values: values
-        }
 
-        const res = await fetch(API + '/rules/' + localStorage.getItem('project'),{
-            method: 'POST',
-            headers:{
-                "Access-Control-Allow-Origin": "*",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(toGoJSON),
-        });
+        if(ruleType === 'SINONIMO'){
+            let toGoJSON = {
+                ruleName: ruleName,
+                ruleType: ruleType,
+                ruleDesc: description,
+                values: values
+            }
 
-        const data = await res.json();
-
-        if(res.status !== 200 && data.msg !== ''){
-            Swal.fire({
-                title: 'Error al agregar',
-                text: data.msg,
-                icon: 'error',
-                button: 'Volver a intentarlo',
-                confirmButtonColor: "#000",
-                timer: "10000"
+            const res = await fetch(API + '/rules/' + localStorage.getItem('project'),{
+                method: 'POST',
+                headers:{
+                    "Access-Control-Allow-Origin": "*",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(toGoJSON),
             });
+    
+            const data = await res.json();
+    
+            if(res.status !== 200 && data.msg !== ''){
+                Swal.fire({
+                    title: 'Error al agregar',
+                    text: data.msg,
+                    icon: 'error',
+                    button: 'Volver a intentarlo',
+                    confirmButtonColor: "#000",
+                    timer: "10000"
+                });
+    
+            }else{
+                Swal.fire({
+                    title: 'Carga exitosa',
+                    text: data.msg,
+                    icon: 'success',
+                    button: 'Continuar',
+                    confirmButtonColor: "#000",
+                    timer: "10000"
+                })
+    
+                setRuleName('');
+                setRuleType('SINONIMO');
+                setDescription('');
+                setValues([
+                    {originalValue: '', changeValue: ''}
+                ]);
+            }
 
-        }else{
-            Swal.fire({
-                title: 'Carga exitosa',
-                text: data.msg,
-                icon: 'success',
-                button: 'Continuar',
-                confirmButtonColor: "#000",
-                timer: "10000"
-            })
-
-            setRuleName('');
-            setRuleType('SINONIMO');
-            setDescription('');
-            setValues([
-                {originalValue: '', changeValue: ''}
-            ]);
-
-
+        } else{
+            let toGoJSON = {
+                ruleName: ruleName,
+                ruleType: ruleType,
+                ruleDesc: description,
+                values: range
+            }
+            const res = await fetch(API + '/rules/' + localStorage.getItem('project'),{
+                method: 'POST',
+                headers:{
+                    "Access-Control-Allow-Origin": "*",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(toGoJSON),
+            });
+    
+            const data = await res.json();
+    
+            if(res.status !== 200 && data.msg !== ''){
+                Swal.fire({
+                    title: 'Error al agregar',
+                    text: data.msg,
+                    icon: 'error',
+                    button: 'Volver a intentarlo',
+                    confirmButtonColor: "#000",
+                    timer: "10000"
+                });
+    
+            }else{
+                Swal.fire({
+                    title: 'Carga exitosa',
+                    text: data.msg,
+                    icon: 'success',
+                    button: 'Continuar',
+                    confirmButtonColor: "#000",
+                    timer: "10000"
+                })
+    
+                setRuleName('');
+                setRuleType('SINONIMO');
+                setDescription('');
+                setRange(
+                    {minValue: '', maxValue: ''}
+                );
+            }
         }
     }
 
@@ -79,6 +129,17 @@ export const NewRule = () =>{
         const reValues = [...values];
         reValues.splice(index, 1);
         setValues(reValues)
+    }
+
+    const handleRange = (e) => {
+        console.log(e.target.name)
+        setRange(range => ({
+            ...range,
+            ...{
+                [e.target.name]: e.target.value,
+                [e.target.name]: e.target.value
+            }
+        }))
     }
 
     return(
@@ -109,22 +170,36 @@ export const NewRule = () =>{
         
                 <div className="bottom rule">
                     {
-                        values.map((val, index) => (
+                        ruleType === 'SINONIMO' ? (
+                            values.map((val, index) => (
+                                <div className="ruleparams">
+                                    <div className="ruleinfo">
+                                        <p className="ruletitle">Valor original</p>
+                                        <input className="parambox" type="text" name="originalValue" value={val.originalValue} onChange={e => handleChangeInput(index, e)} required placeholder="Valor en la tabla" />
+                                    </div>
+                                    <div className="ruleinfo">
+                                        <p className="ruletitle">Valor de cambio</p>
+                                        <input className="parambox" type="text" name="changeValue" value={val.changeValue} onChange={e => handleChangeInput(index, e)} required placeholder="Valor de reemplazo" />
+                                    </div>
+                                    <div className="dynamicButtons">
+                                        <button onClick={() => handleAddFields()}>+</button>
+                                        <button onClick={() => handleRemoveFields(index)}>-</button>
+                                    </div>
+                                </div>
+                            ))
+
+                        ) : (
                             <div className="ruleparams">
                                 <div className="ruleinfo">
-                                    <p className="ruletitle">Valor original</p>
-                                    <input className="parambox" type="text" name="originalValue" value={val.originalValue} onChange={e => handleChangeInput(index, e)} required placeholder="Valor en la tabla" />
+                                    <p className="ruletitle">Valor mínimo</p>
+                                    <input className="parambox" type="text" name="minValue" value={range.minValue} onChange={e => handleRange(e)} required placeholder="Valor minímo de columna" />
                                 </div>
                                 <div className="ruleinfo">
-                                    <p className="ruletitle">Valor de cambio</p>
-                                    <input className="parambox" type="text" name="changeValue" value={val.changeValue} onChange={e => handleChangeInput(index, e)} required placeholder="Valor de reemplazo" />
-                                </div>
-                                <div className="dynamicButtons">
-                                    <button onClick={() => handleAddFields()}>+</button>
-                                    <button onClick={() => handleRemoveFields(index)}>-</button>
+                                    <p className="ruletitle">Valor máximo</p>
+                                    <input className="parambox" type="text" name="maxValue" value={range.maxValue} onChange={e => handleRange(e)} required placeholder="Valor máximo de columna" />
                                 </div>
                             </div>
-                        ))
+                        )
                     }
                 </div>
                 <div className="changebuttons">

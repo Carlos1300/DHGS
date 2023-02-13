@@ -193,17 +193,30 @@ def load_catalog(args):
             dhRep.insert_document_db('Catalogos', doc)
             
 def generate_rules(args):
-    rules_df = pd.DataFrame()
     
-    rules_df['search_value'] = [args['values'][x]['originalValue'] for x in range(len(args['values']))]
-    rules_df['change_value'] = [args['values'][x]['changeValue'] for x in range(len(args['values']))]
-    
-    doc = json.loads(rules_df.to_json(orient='table'))
-    doc['RuleName'] = args['ruleName'].upper()
-    doc['RuleType'] = args['ruleType']
-    doc['RuleDesc'] = args['ruleDesc']
-    
-    dhRep.InsertarDocumentoBDProyecto('Rules', doc)
+    if args["ruleType"] == 'SINONIMO':
+        rules_df = pd.DataFrame()
+        
+        rules_df['search_value'] = [args['values'][x]['originalValue'] for x in range(len(args['values']))]
+        rules_df['change_value'] = [args['values'][x]['changeValue'] for x in range(len(args['values']))]
+        
+        doc = json.loads(rules_df.to_json(orient='table'))
+        doc['RuleName'] = args['ruleName'].upper()
+        doc['RuleType'] = args['ruleType']
+        doc['RuleDesc'] = args['ruleDesc']
+        
+        dhRep.InsertarDocumentoBDProyecto('Rules', doc)
+    else:
+        rules_df = pd.DataFrame()
+        rules_df['min_value'] = [int(args['values']['minValue'])]
+        rules_df['max_value'] = [int(args['values']['maxValue'])]
+        
+        doc = json.loads(rules_df.to_json(orient='table'))
+        doc['RuleName'] = args['ruleName'].upper()
+        doc['RuleType'] = args['ruleType']
+        doc['RuleDesc'] = args['ruleDesc']
+        
+        dhRep.InsertarDocumentoBDProyecto('Rules', doc)
     
 def generate_layout(args):
     options_count = len(args['options'])

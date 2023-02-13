@@ -226,23 +226,26 @@ def get_data_perfs(project):
 
 @app.route('/summary/<project>', methods=['GET'])
 def get_data_summary(project):
-    doc = MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Data Summary'}, {'_id': 0, 'name': 0})
-    columns = list(doc.keys())
+    try:
+        doc = MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Data Summary'}, {'_id': 0, 'name': 0})
+        columns = list(doc.keys())
 
-    data_summary = []
-    temp_dict = {}
-    id = 1
+        data_summary = []
+        temp_dict = {}
+        id = 1
 
-    for col in columns:
-        temp_dict.update({'Column': col})
-        temp_dict.update({'id': id})
-        for key in list(doc[col].keys()):
-            temp_dict.update({key: doc[col][key]})
-        dict_data = temp_dict.copy()
-        data_summary.append(dict_data)
-        id += 1
+        for col in columns:
+            temp_dict.update({'Column': col})
+            temp_dict.update({'id': id})
+            for key in list(doc[col].keys()):
+                temp_dict.update({key: doc[col][key]})
+            dict_data = temp_dict.copy()
+            data_summary.append(dict_data)
+            id += 1
 
-    return jsonify(data_summary)
+        return jsonify(data_summary)
+    except:
+        return jsonify({'msg': 'No se encontró ningún sumario'}), 401
 
 @app.route('/getDataLoads/<email>/<project>', methods=['GET'])
 def get_data_loads(email, project):
@@ -304,28 +307,31 @@ def catalogs(email):
         return jsonify({"msg": "El catálogo ha sido eliminado"})
     
     else:
-        catalogs = []
-        
-        id = 1
-        
-        prev_name = ''
-        
-        for doc in MONGO_CLIENT['datahub']['Catalogos'].find({'$or': [{'User': 'Public'}, {'User': email}]}):
+        try:
+            catalogs = []
             
-            if prev_name != doc['CatalogName']:
+            id = 1
             
-                catalogs.append({
-                    'id': id,
-                    '_id': str(ObjectId(doc['_id'])),
-                    'name': doc['CatalogName'],
-                    'description': doc['Description'],
-                    'user': doc['User']
-                })
+            prev_name = ''
             
-            prev_name = doc['CatalogName']
-            id+=1
-        
-        return jsonify(catalogs)
+            for doc in MONGO_CLIENT['datahub']['Catalogos'].find({'$or': [{'User': 'Public'}, {'User': email}]}):
+                
+                if prev_name != doc['CatalogName']:
+                
+                    catalogs.append({
+                        'id': id,
+                        '_id': str(ObjectId(doc['_id'])),
+                        'name': doc['CatalogName'],
+                        'description': doc['Description'],
+                        'user': doc['User']
+                    })
+                
+                prev_name = doc['CatalogName']
+                id+=1
+            
+            return jsonify(catalogs), 200
+        except:
+            return jsonify({'msg': "Ocurrió un error al cargar los catálogos"}), 401
 
 @app.route('/rules/<project>', methods=['POST', 'GET', 'DELETE'])
 def rules(project):
@@ -412,7 +418,91 @@ def layouts(project):
         id+=1
         
         return jsonify(project_layouts)
+
+@app.route('/phonetics/<project>', methods=['POST', 'GET'])
+def phonetics(project):
+    
+    if request.method == 'POST':
+        column= request.get_json()
         
+        doc= MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Foneticos - ' + column})
+
+        data_resume = []
+        temp_dict = {}
+
+        id = 1
+
+        for i in range(len(doc['data'])):
+            temp_dict.update({
+                                "ID": id,
+                                "Word": doc['data'][i][column],
+                                "Soundex": doc['data'][i]['soundex'],
+                                "Freq Soundex": doc['data'][i]['freq soundex'],
+                                "Dist Soundex": round(doc['data'][i]['soundex dist%'], 2),
+                                "Metaphone": doc['data'][i]['metaphone'],
+                                "Freq Metaphone": doc['data'][i]['freq metaphone'],
+                                "Dist Metaphone": round(doc['data'][i]['metaphone dist%'], 2)
+                            })
+            dict_data = temp_dict.copy()
+            data_resume.append(dict_data)
+            id += 1
+        
+        return jsonify(data_resume)
+    
+    else:
+        fon_names = []
+
+        doc = MONGO_CLIENT[project]["DataPerf"].find({}, {'_id': 0, 'schema': 1, 'data': 1, 'name': 1})
+        for d in doc:
+            if 'Foneticos' in d["name"]:
+                fon_names.append(d['name'].split('-')[-1])
+
+        fon_names = [x.strip() for x in fon_names]
+        
+        return jsonify(fon_names)
+    
+
+@app.route('/frequency/<project>', methods=['POST', 'GET'])
+def frequency(project):
+    
+    if request.method == 'POST':
+        column= request.get_json()
+        
+        doc= MONGO_CLIENT[project]['DataPerf'].find_one({'name': 'Frequency - ' + column})
+
+        data_resume = []
+        temp_dict = {}
+
+        id = 1
+
+        for i in range(len(doc['data'])):
+            temp_dict.update({
+                        "ID": id,
+                        "Phrase": doc['data'][i]['Phrase'],
+                        "id": doc['data'][i]['Id'],
+                        "Words": doc['data'][i]['Words'],
+                        "Frequency": doc['data'][i]['Frequency'],
+                        "Distribution": doc['data'][i]['Dst %'],
+                        "Category": doc['data'][i]['Category']
+                    })
+
+            dict_data = temp_dict.copy()
+            data_resume.append(dict_data)
+            id += 1
+        
+        return jsonify(data_resume)
+    
+    else:
+        freq_names = []
+
+        doc = MONGO_CLIENT[project]["DataPerf"].find({}, {'_id': 0, 'schema': 1, 'data': 1, 'name': 1})
+        for d in doc:
+            if 'Frequency' in d["name"]:
+                freq_names.append(d['name'].split('-')[-1])
+
+        freq_names = [x.strip() for x in freq_names]
+        
+        return jsonify(freq_names)
 
 
 ####################################### DATA FLOW IMPLEMENTATION ###################################################
@@ -559,6 +649,7 @@ def apply_flow(project):
     datasources = dict()
     
     # Se ejecutan todas las operaciones del flujo
+    # try:
     for step in dataflow['Operations']:
         if step['name'] in dhOperations.__dict__:
             funcion = dhOperations.__dict__[step['name']]
@@ -585,7 +676,10 @@ def apply_flow(project):
         print('---------------------------------------' + val + '---------------------------------------')
         print(datasources[val])
 
-    return jsonify({'msg': "Se aplicó el flujo correctamente."})
+    return jsonify({'msg': "Se aplicó el flujo correctamente."}), 200
+    # except:
+    #     print('Mamó')
+    #     return jsonify({'msg': "Ocurrió un error al aplicar el flujo."})
 
 @app.route('/export_data/<email>', methods=['GET', 'POST'])
 def export_data(email):
@@ -603,7 +697,6 @@ def export_data(email):
     register_count = dhRepository.register_count('DataCleaned')
     if register_count > 1:
         dictObj = dhRepository.obtener_atributos_prj_many('DataCleaned', ['schema','data'])
-        print(len(dictObj))
         dtfrm = dhRepository.join_chunk_data('DataCleaned')
     else:
         dictObj = dhRepository.obtener_atributos_por_docid_prj('DataCleaned', source_id, ['schema','data'])
@@ -611,7 +704,7 @@ def export_data(email):
 
     if export_json['fileType'] == 'csv':
         output_name = export_json['outputName'] + '.csv'
-        return jsonify({'data': dtfrm.to_csv(index=False), 'type': 'csv', 'filename': output_name})
+        return jsonify({'data': dtfrm.to_csv(index=False, header=True), 'type': 'csv', 'filename': output_name})
     
     elif export_json['fileType'] == 'xlsx':
         output_name = export_json['outputName'] + '.xlsx'

@@ -387,6 +387,7 @@
     .manageTable{
         display: flex;
         justify-content: space-between;
+        align-items: center;
 
         .addButton{
             margin: 10px 0;
@@ -398,6 +399,17 @@
             cursor: pointer;
 
         }
+
+        .selectColumns{
+            label{
+                margin-right: 5px;
+            }
+
+            select{
+                height: auto;
+            }
+        }
+
     }
 }
 

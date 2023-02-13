@@ -41,10 +41,8 @@ export const Export = () => {
 
         const data = await res.json();
 
-        // console.log(data.data)
-
         if (data.type === 'xlsx'){
-            let ws = utils.json_to_sheet(data.data.data);
+            let ws = utils.json_to_sheet(data.data);
             let wb = utils.book_new();
             utils.book_append_sheet(wb, ws, "Hoja1");
             writeFile(wb, data.filename);
@@ -52,7 +50,7 @@ export const Export = () => {
             setProjectName('');
 
         } else if(data.type === 'csv'){
-            const url = window.URL.createObjectURL(new Blob([data.data]));
+            const url = window.URL.createObjectURL(new Blob(["\ufeff", data.data]));
             const link = document.createElement('a');
             link.href = url
             link.setAttribute('download', data.filename)
@@ -61,8 +59,7 @@ export const Export = () => {
 
             setProjectName('');
         }else{
-            const fileData = JSON.stringify(data.data);
-            const blob = new Blob([fileData], { type: "text/plain" });
+            const blob = new Blob(["\ufeff", data.data], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.download = data.filename;

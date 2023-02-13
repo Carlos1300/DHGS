@@ -48,7 +48,7 @@ export const PerfMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                            <button className="addButton">Ver frecuencias</button>
+                            <Link to={'frequency/' + localStorage.getItem('project')}><button className="addButton">Ver frecuencias</button></Link>
                         </div>
                     </div>
                     <div className="right">
@@ -60,7 +60,7 @@ export const PerfMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                            <button className="addButton">Ver fonéticos</button>
+                            <Link to={'phonetics/' + localStorage.getItem('project')}><button className="addButton">Ver fonéticos</button></Link>
                         </div>
                     </div>
                 </div>

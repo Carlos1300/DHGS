@@ -244,13 +244,13 @@ def obtener_atributos_prj_many(Coleccion, Campos_List):
     if '_id' not in Campos_List:
         campos_dict['_id'] = 0
 
-    complete_doc = []
     doc = db_Proyecto[Coleccion].find({}, campos_dict)
     
-    for reg in doc:
-        complete_doc.append(reg)
+    data_dict = []
+    for d in doc:
+        data_dict.extend(d['data'])
     
-    return complete_doc
+    return data_dict
 
 def obtener_atributos_por_filtro_prj(Coleccion, filtroDict, Campos_List):
     """

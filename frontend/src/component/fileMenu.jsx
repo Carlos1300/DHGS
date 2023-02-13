@@ -47,7 +47,7 @@ export const FileMenu = () =>{
                             </div>
                         </div>
                         <div className="menuButton">
-                        <Link to={'rules/' + localStorage.getItem('project')}><button className="addButton">Ver Reglas</button></Link>
+                        <Link to={'rules/' + localStorage.getItem('project')}><button className="addButton">Ver reglas</button></Link>
                         </div>
                     </div>
                     <div className="right none"></div>

@@ -16,8 +16,22 @@ export const CatalogsTable = () => {
   const getCatalogs = async () =>{
     const res = await fetch(API + '/catalogs/' + localStorage.getItem('email'));
     const data = await res.json();
-    setCatalogs(data);
-    setLoadingTable('disabled')
+
+    if(data.msg !== '' && res.status !== 200){
+      Swal.fire({
+        title: 'Error al cargar catálogos',
+        text: data.msg,
+        icon: 'error',
+        button: 'Volver a intentarlo',
+        confirmButtonColor: "#000",
+        timer: "10000"
+      });
+      setCatalogs(data);
+      setLoadingTable('disabled');
+    }else{
+      setCatalogs(data);
+      setLoadingTable('disabled');
+    }
   }
 
   useEffect(() => {
