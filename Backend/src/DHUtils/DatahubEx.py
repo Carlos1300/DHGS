@@ -99,13 +99,12 @@ def LeerCsv_a_DataFrame (docCarga, doc_file):
     #     return None, ErrNumber
 
     ### Se carga la hoja a memoria en un DataFrame
-    df_Source = pd.read_csv(doc_file, encoding=docCarga['Encoding'], sep=docCarga['Separator'])
+    if docCarga['Separator'] == "\\t":
+        df_Source = pd.read_csv(doc_file, encoding=docCarga['Encoding'], sep='\t', index_col=False)
+    else:    
+        df_Source = pd.read_csv(doc_file, encoding=docCarga['Encoding'], sep=docCarga['Separator'])
 
     return  df_Source, 0
-
-def read_txt(docCarga, doc_file):
-    df_Source = pd.read_table(doc_file, encoding=docCarga['Encoding'], sep=docCarga['Separator'], low_memory=False)
-    return df_Source, 0
 
 def CargarFuente_a_Dataframe (argumentos):
     RegistroCarga, doc_file = RegistrarInicioCargaDeArchivo(argumentos)
@@ -114,7 +113,7 @@ def CargarFuente_a_Dataframe (argumentos):
     elif argumentos['source_type'] == 'csv':
         df, err = LeerCsv_a_DataFrame(RegistroCarga, doc_file)
     elif argumentos['source_type'] == 'txt':
-        df, err= read_txt(RegistroCarga, doc_file)
+        df, err= LeerCsv_a_DataFrame(RegistroCarga, doc_file)
     else:
         err = 1
 

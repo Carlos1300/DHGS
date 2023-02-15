@@ -1,17 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import "../general.scss";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
 import { Link } from "react-router-dom";
+import Modal from '@mui/material/Modal';
+import Backdrop from '@mui/material/Backdrop';
+import Fade from '@mui/material/Fade';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 export const PerfMenu = () =>{
+
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
     return(
         <div className="perfMenu">
             <Sidebar />
             <div className="perfContainer">
                 <Navbar />
-                <div className="top">
+                <Modal open={open} onClose={handleClose} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{timeout: 500,}}>
+                    <Fade in={open}>
+                        <div className="modalBox">
+                        <div className="closeBtn" onClick={handleClose}>&times;</div>
+                        <div className="modalContent">
+                            <div className="modalTitle">
+                                <h3><b>Página de Datos Perfilados</b></h3>
+                            </div>
+                            <div className="modalText">
+                            <p>En esta página encontrarás todos los perfilados de datos que son generados por el DataHub y sus reglas, ten en cuenta que para visualizar algunos de ellos se requiere haber ejecutado alguna regla en específico en alguno de tus flujos. Para ver los perfilados que han sido creados da click en cualquiera de los botones.</p>
+                            </div>
+                        </div>
+                        </div>
+                    </Fade>
+                </Modal>
+                <div className="top info">
                     <h1 className="title">Datos Perfilados</h1>
+                    <button onClick={handleOpen}><QuestionMarkIcon /></button>
                 </div>
                 <div className="top">
                     <div className="left">

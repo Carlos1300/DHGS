@@ -5,6 +5,10 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Link } from "react-router-dom";
 import LinearProgress from '@mui/material/LinearProgress';
 import Swal from 'sweetalert2'
+import Modal from '@mui/material/Modal';
+import Backdrop from '@mui/material/Backdrop';
+import Fade from '@mui/material/Fade';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 const API = process.env.REACT_APP_API;
 
@@ -12,12 +16,16 @@ export const RulesTable = () => {
 
   const [rules, setRules] = useState([]);
   const [loadingTable, setLoadingTable] = useState('enabled');
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const getRules = async () =>{
     const res = await fetch(API + '/rules/' + localStorage.getItem('project'));
     const data = await res.json();
     setRules(data);
-    setLoadingTable('disabled')
+    setLoadingTable('disabled');
   }
 
   useEffect(() => {
@@ -92,6 +100,15 @@ export const RulesTable = () => {
     }
   }
 
+  const NoRows = () =>{
+    return(
+      <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%"}}>
+        <img style={{width: "120", height: "100"}} src="https://static.vecteezy.com/system/resources/thumbnails/010/856/652/small/no-result-data-document-or-file-not-found-concept-illustration-flat-design-eps10-modern-graphic-element-for-landing-page-empty-state-ui-infographic-icon-etc-vector.jpg" alt="No data" />
+        <p>No se encontraron reglas.</p>
+      </div>
+    )
+  }
+
   const columns = [
     { field: '_id', hide: true},
     { field: 'id', headerName: 'ID', width: 50},
@@ -111,10 +128,31 @@ export const RulesTable = () => {
 
   return(
       <div className="datatable">
-        <div className="manageTable">
-          <h1 className="title">Reglas</h1>
-          <Link to="new"><div className="addButton">Agregar Reglas</div></Link>
+
+        <Modal open={open} onClose={handleClose} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{timeout: 500,}}>
+          <Fade in={open}>
+            <div className="modalBox">
+              <div className="closeBtn" onClick={handleClose}>&times;</div>
+              <div className="modalContent">
+                <div className="modalTitle">
+                    <h3><b>Página de Mis Reglas</b></h3>
+                </div>
+                <div className="modalText">
+                  <p>En esta página podrás encontrar todas las reglas que has agregado al proyecto activo, también tendrás la opción de copiar su nombre al portapapeles para después pegarlo en alguna regla que lo requiera, para esto simplemente da click en la opción <i>Copiar</i>.</p>
+                </div>
+              </div>
+            </div>
+          </Fade>
+        </Modal>
+
+        <div className="top">
+          <h1 className="title">Mis Reglas</h1>
+          <div className="tableButtons">
+            <button className="helpButton" onClick={handleOpen}><QuestionMarkIcon /></button>
+            <Link to='new'><button className="addButton">Agregar Regla</button></Link>
+          </div>
         </div>
+        <div className="table">
           <DataGrid
           rows={rules}
           columns={columns}
@@ -125,9 +163,11 @@ export const RulesTable = () => {
           disableSelectionOnClick
           components={{
             LoadingOverlay: LinearProgress,
+            NoRowsOverlay: NoRows
           }}
           loading={loadingTable === 'enabled' ? true : false}
           />
+        </div>
       </div>
   )
 }

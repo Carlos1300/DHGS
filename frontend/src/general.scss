@@ -1,5 +1,20 @@
 // BUTTON
 
+*::-webkit-scrollbar{
+    width: 15px;
+}
+
+*::-webkit-scrollbar-thumb{
+    background-color: #a9b0b3;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-track{
+    background-color: #F5F5F5;
+}
+
 .swal-button {
     padding: 7px 19px;
     border-radius: 2px;
@@ -47,7 +62,7 @@
 // SIDEBAR
 
 .sidebar{
-    background-color: #893d9e;
+    background-color: #5f256f;
     flex: 1;
     border-right: 0.5px solid rgb(255, 255, 255);
     min-height: 100vh;
@@ -78,6 +93,10 @@
             margin: 0;
             padding: 0;
 
+            a{
+                text-decoration: none !important;
+            }
+
             .title{
                 color: white;
                 font-size: 10px;
@@ -95,7 +114,7 @@
                 transition: all 0.3s ease-in-out;
 
                 &:hover{
-                    background-color: #e868a8;
+                    background-color: #b6487f;
                 }
 
                 .icon{
@@ -375,8 +394,77 @@
 //DATATABLE
 
 .datatable{
-    height: 620px;
-    padding: 20px;
+    .top{
+        justify-content: space-between;
+        box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+        padding: 10px;
+        margin: 20px 20px 10px 20px;
+        display: flex;
+
+        .helpButton{
+            width: 30px;
+            height: 30px;
+            color: white;
+            background-color: #18615B;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s ease-in-out;
+
+            &:hover{
+                color: #18615B;
+                background-color: rgb(224, 224, 224);
+            }
+        }
+
+        .addButton{
+            padding: 5px 10px;
+            color: white;
+            background-color: #18615B;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+
+            &:hover{
+                color: #18615B;
+                background-color: rgb(224, 224, 224);
+            }
+        }
+
+        .tableButtons{
+            display: flex;
+            justify-content: space-between;
+            width: 190px;
+
+            &.perf{
+                width: 30px;
+            }
+
+            &.freq{
+                width: 225px;
+
+                .selectColumns{
+                    select{
+                        width: 100%;
+                        border: none;
+                        border-bottom: 1px solid gray;
+                        outline: none;
+                        padding: 5px;
+                    }
+                }
+            }
+        }
+
+        .title{
+            color: rgb(52, 52, 52);
+            font-size: 28px;
+        }
+    }
+
+    .table{
+        height: 555px;
+        padding: 20px;
+    }
     
     .flowNames{
         list-style: none;
@@ -398,16 +486,6 @@
             border: none;
             cursor: pointer;
 
-        }
-
-        .selectColumns{
-            label{
-                margin-right: 5px;
-            }
-
-            select{
-                height: auto;
-            }
         }
 
     }
@@ -565,6 +643,68 @@
 
 //ADD NEW
 
+.modalBox{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    background-color: white;
+    box-shadow: 24px;
+    padding: 4px;
+    border-radius: 10px;
+    padding: 20px 30px;
+
+    .closeBtn{
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+        background: #888;
+        color: #eee;
+        text-align: center;
+        line-height: 15px;
+        border-radius: 15px;
+    }
+
+    .modalContent{
+        .modalTitle{
+            color: #222;
+            margin: 10px 0px 20px;
+            font-size: 25px;
+        }
+
+        .modalTable{
+            table{
+                width: 100%;
+                border: 1px solid;
+                border-collapse: collapse;
+
+                th, td{
+                    border: 1px solid;
+                    padding: 5px;
+                }
+
+                th{
+                    height: 20px;
+                    background-color: #5f256f;
+                    border-color: #5f256f;
+                    color: white;
+                }
+
+                tr{
+                    &:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 .new{
     width: 100%;
     display: flex;
@@ -583,6 +723,32 @@
                 color: white;
                 background-color: #18615B;
                 border: none;
+                transition: all 0.2s ease-in-out;
+
+                &:hover{
+                    color: #18615B;
+                    background-color: rgb(224, 224, 224);
+                }
+            }
+        }
+
+        .top{
+            justify-content: space-between;
+
+            button{
+                width: 30px;
+                height: 30px;
+                color: white;
+                background-color: #18615B;
+                border: none;
+                cursor: pointer;
+                border-radius: 50%;
+                transition: all 0.2s ease-in-out;
+
+                &:hover{
+                    color: #18615B;
+                    background-color: rgb(224, 224, 224);
+                }
             }
         }
 
@@ -596,22 +762,57 @@
                 box-shadow: 2px 4px 10px 1px rgb(201 201 201 / 47%);
                 padding: 10px;
                 margin: 20px;
-                display: flex;
-                gap: 180px;
+                display: block !important;
+                
+                form{
+                    display: flex;
+                    column-gap: 30px;
+                    row-gap: 20px;
+                    justify-content: space-between;
 
-                .formInput{
+                    .formInput{
+                        width: 40%;
+                        padding: 5px 0 5px 0;
 
-                    .ruletitle{
-                        font-size: 18px;
-                        font-weight: 800;
-                        margin-bottom: 5px;
-                    }
+                        p{
+                            width: 100%;
+                            border: none;
+                            border-bottom: 1px solid gray;
+                            padding: 5px;
+                        }
 
-                    .parambox{
-                        margin-top: 0px;
-                        margin-bottom: 10px;
-                        border: none;
-                        border-bottom: 1px solid gray;    
+                        label{
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+
+                            .icon{
+                                cursor: pointer;
+                            }
+                        }
+
+                        input{
+                            width: 100%;
+                            border: none;
+                            border-bottom: 1px solid gray;
+                            outline: none;
+                            padding: 5px;
+                        }
+
+                        textarea{
+                            width: 100%;
+                            padding: 5px;
+                            border: none;
+                            border-bottom: 1px solid gray;
+                        }
+
+                        select{
+                            width: 100%;
+                            border: none;
+                            border-bottom: 1px solid gray;
+                            outline: none;
+                            padding: 5px;
+                        }
                     }
                 }
             }
@@ -744,6 +945,11 @@
                             cursor: pointer;
                             font-size: 20px;
                             text-align: center;
+
+                            &:hover{
+                                color: #18615B;
+                                background-color: rgb(224, 224, 224);
+                            }
                         }
                     }
                 }
@@ -767,6 +973,29 @@
                         &.none{
                             visibility: hidden;
                         }
+
+                        button{
+                            width: 10px;
+                            height: 10px;
+                            color: white;
+                            background-color: #18615B;
+                            border: none;
+                            cursor: pointer;
+                            border-radius: 50%;
+                            transition: all 0.2s ease-in-out;
+
+                            &:hover{
+                                color: #18615B;
+                                background-color: rgb(224, 224, 224);
+                            }
+
+                            .icon{
+                                display: flex;
+                                justify-content: center;
+                                font-size: 10px;
+                            }
+                        }
+
                     }
 
                     .ruledesc{
@@ -824,18 +1053,17 @@
             }
 
             .title{
-                color: rgb(137, 137, 137);
-                font-size: 20px;
+                color: rgb(52, 52, 52);
+                font-size: 28px;
             }
 
             .left{
                 flex: 1;
-                text-align: center;
+                display: flex;
+                justify-content: center;
+                align-items: center;
 
                 .placeholderImg{
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 50%;
                     object-fit: cover;
                 }
             }
@@ -846,11 +1074,20 @@
                 form{
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 30px;
+                    column-gap: 30px;
+                    row-gap: 20px;
                     justify-content: space-around;
 
                     .formInput{
                         width: 40%;
+                        padding: 5px 0 5px 0;
+
+                        p{
+                            width: 100%;
+                            border: none;
+                            border-bottom: 1px solid gray;
+                            padding: 5px;
+                        }
 
                         label{
                             display: flex;
@@ -864,9 +1101,10 @@
 
                         input{
                             width: 100%;
-                            padding: 5px;
                             border: none;
                             border-bottom: 1px solid gray;
+                            outline: none;
+                            padding: 5px;
                         }
 
                         textarea{
@@ -875,18 +1113,36 @@
                             border: none;
                             border-bottom: 1px solid gray;
                         }
-                    }
 
-                    button{
-                        width: 150px;
-                        padding: 10px;
-                        border: none;
-                        background-color: teal;
-                        color: #FFF;
-                        font-weight: bold;
-                        cursor: pointer;
-                        margin-top: 10px;
+                        select{
+                            width: 100%;
+                            border: none;
+                            border-bottom: 1px solid gray;
+                            outline: none;
+                            padding: 5px;
+                        }
                     }
+                }
+            }
+        }
+
+        .send{
+            display: flex;
+            padding: 0px 10px 10px 10px;
+            margin: 0px 10px 0px 10px;
+            justify-content: flex-end;
+
+            button{
+                padding: 5px 10px;
+                color: white;
+                background-color: #18615B;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+
+                &:hover{
+                    color: #18615B;
+                    background-color: rgb(224, 224, 224);
                 }
             }
         }
@@ -906,6 +1162,13 @@
                 color: white;
                 background-color: #18615B;
                 border: none;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+
+                &:hover{
+                    color: #18615B;
+                    background-color: rgb(224, 224, 224);
+                }
 
                 &:disabled{
                     background-color: lightgray;
@@ -924,6 +1187,37 @@
 
     .perfContainer{
         flex: 6;
+
+        .top{
+            &.info{
+                justify-content: space-between;
+                box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+                padding: 10px;
+                margin: 20px;
+                display: flex;
+
+                .title{
+                    color: rgb(52, 52, 52);
+                    font-size: 28px;
+                }
+    
+                button{
+                    width: 30px;
+                    height: 30px;
+                    color: white;
+                    background-color: #18615B;
+                    border: none;
+                    cursor: pointer;
+                    border-radius: 50%;
+                    transition: all 0.2s ease-in-out;
+    
+                    &:hover{
+                        color: #18615B;
+                        background-color: rgb(224, 224, 224);
+                    }
+                }
+            }
+        }
 
         .top, .bottom{
             padding: 20px;
@@ -985,6 +1279,12 @@
                         background-color: #18615B;
                         border: none;
                         cursor: pointer;
+                        transition: all 0.2s ease-in-out;
+
+                        &:hover{
+                            color: #18615B;
+                            background-color: rgb(224, 224, 224);
+                        }
                     }
                 }
 

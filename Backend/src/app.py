@@ -243,9 +243,9 @@ def get_data_summary(project):
             data_summary.append(dict_data)
             id += 1
 
-        return jsonify(data_summary)
+        return jsonify(data_summary), 200
     except:
-        return jsonify({'msg': 'No se encontró ningún sumario'}), 401
+        return jsonify({'msg': 'Null'}), 401
 
 @app.route('/getDataLoads/<email>/<project>', methods=['GET'])
 def get_data_loads(email, project):
@@ -359,23 +359,26 @@ def rules(project):
         return jsonify({"msg": "El conjunto de reglas ha sido eliminado"})
     
     else:
-        project_rules = []
-        
-        id = 1
-        
-        for doc in MONGO_CLIENT[project]['Rules'].find({}):
+        try:
+            project_rules = []
             
-            project_rules.append({
-                'id': id,
-                '_id': str(ObjectId(doc['_id'])),
-                'name': doc['RuleName'],
-                'type': doc['RuleType'],
-                'description': doc['RuleDesc']
-            })
+            id = 1
+            
+            for doc in MONGO_CLIENT[project]['Rules'].find({}):
+                
+                project_rules.append({
+                    'id': id,
+                    '_id': str(ObjectId(doc['_id'])),
+                    'name': doc['RuleName'],
+                    'type': doc['RuleType'],
+                    'description': doc['RuleDesc']
+                })
 
-        id+=1
-        
-        return jsonify(project_rules)
+            id+=1
+            
+            return jsonify(project_rules)
+        except:
+            return jsonify({'msg': 'Null'}), 401
     
 @app.route('/layouts/<project>', methods=['POST', 'GET', 'DELETE'])
 def layouts(project):
@@ -402,22 +405,25 @@ def layouts(project):
         return jsonify({"msg": "El layout ha sido eliminado"})
     
     else:
-        project_layouts = []
-        
-        id = 1
-        
-        for doc in MONGO_CLIENT[project]['Layouts'].find({}):
+        try:
+            project_layouts = []
             
-            project_layouts.append({
-                'id': id,
-                '_id': str(ObjectId(doc['_id'])),
-                'name': doc['LayoutName'],
-                'description': doc['LayoutDesc']
-            })
+            id = 1
+            
+            for doc in MONGO_CLIENT[project]['Layouts'].find({}):
+                
+                project_layouts.append({
+                    'id': id,
+                    '_id': str(ObjectId(doc['_id'])),
+                    'name': doc['LayoutName'],
+                    'description': doc['LayoutDesc']
+                })
 
-        id+=1
-        
-        return jsonify(project_layouts)
+            id+=1
+            
+            return jsonify(project_layouts)
+        except:
+            return jsonify({'msg': 'Null'}), 401
 
 @app.route('/phonetics/<project>', methods=['POST', 'GET'])
 def phonetics(project):
@@ -514,14 +520,15 @@ def get_rules():
     
     id = 1
     
-    
     for doc in MONGO_CLIENT['datahub']['Rules'].find():
         rules.append({
             'id': id,
             'name': doc["name"],
             "value": doc["value"],
             "desc": doc["description"],
-            "params": doc["params"]
+            "params": doc["params"],
+            "modalDesc": doc["modalDesc"],
+            "result": doc["result"]
         })
         
         
@@ -678,7 +685,6 @@ def apply_flow(project):
 
     return jsonify({'msg': "Se aplicó el flujo correctamente."}), 200
     # except:
-    #     print('Mamó')
     #     return jsonify({'msg': "Ocurrió un error al aplicar el flujo."})
 
 @app.route('/export_data/<email>', methods=['GET', 'POST'])

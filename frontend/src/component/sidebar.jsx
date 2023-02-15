@@ -8,7 +8,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import EmailIcon from '@mui/icons-material/Email';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
-import LogoutIcon from '@mui/icons-material/Logout';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import HistoryIcon from '@mui/icons-material/History';
 import { Link, useNavigate } from "react-router-dom";
 import { ProjectContext } from "../context/projectContext";
@@ -47,7 +47,6 @@ export const Sidebar = () => {
             <span className="logo" style={{textDecoration: "none"}}>DataHub</span>
           </Link>
         </div>
-        <hr></hr>
         <div className="center">
           <ul>
             <p className="title">PRINCIPAL</p>
@@ -137,7 +136,7 @@ export const Sidebar = () => {
             </li>
             <p className="title">CERRAR SESIÓN</p>
               <li onClick={logout}>
-                <LogoutIcon className="icon"/>
+                <MeetingRoomIcon className="icon"/>
                 <span>Salir</span>
               </li>
           </ul>

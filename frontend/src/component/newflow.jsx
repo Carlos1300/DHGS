@@ -4,6 +4,10 @@ import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import Modal from '@mui/material/Modal';
+import Backdrop from '@mui/material/Backdrop';
+import Fade from '@mui/material/Fade';
 
 const API = process.env.REACT_APP_API;
 
@@ -16,6 +20,24 @@ export const NewFlow = () =>{
     const [availableRules, setAvailableRules] = useState([]);
     const [flowName, setFlowName] = useState("");
     const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
+    const [modalRule, setModalRule] = useState('');
+    const [openRuleModal, setOpenRuleModal] = useState(false);
+    const [openParamModal, setOpenParamModal] = useState(false);
+
+    const handleOpen = (item) => {
+        setOpen(true);
+        setModalRule(item);
+    }
+    const handleClose = () => setOpen(false);
+
+    const handleRuleOpen = () => setOpenRuleModal(true);
+
+    const handleRuleClose = () => setOpenRuleModal(false);
+
+    const handleParamOpen = () => setOpenParamModal(true);
+
+    const handleParamClose = () => setOpenParamModal(false);
 
     const getRules = async () =>{
         const res = await fetch(API + '/getRules');
@@ -188,6 +210,7 @@ export const NewFlow = () =>{
     }
 
     const titles = ['Agregar Reglas', 'Agregar Parámetros'];
+    const handlers = [handleRuleOpen, handleParamOpen];
 
     const forwardButton = () =>{
         setPage((page) => page + 1);
@@ -206,8 +229,88 @@ export const NewFlow = () =>{
             <Sidebar />
             <div className="newContainer">
                 <Navbar />
+                <Modal open={open} onClose={handleClose} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{timeout: 500,}}>
+                    <Fade in={open}>
+                        <div className="modalBox">
+                        <div className="closeBtn" onClick={handleClose}>&times;</div>
+                        <div className="modalContent">
+                            <div className="modalTitle">
+                                <h3><b>{modalRule.name}</b></h3>
+                            </div>
+                            <div className="modalText">
+                            <p>{modalRule.modalDesc}</p>
+                            <p>A continuación, se presenta un desglose de los parámetros de la regla.</p>
+                            <div className="modalTable">
+                                <table>
+                                <thead>
+                                    <tr>
+                                        <th style={{width: "30%"}}>Parámetro</th>
+                                        <th style={{width: "70%"}}>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        modalRule !== '' ? (
+                                            modalRule.params.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{item.display_name !== 'None' ? item.display_name : 'Ninguno'}</td>
+                                                    <td>{item.modalDesc !== 'None' ? item.modalDesc : 'No hay descripción.'}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <></>
+                                        )
+                                    }
+                                </tbody>
+                                </table>
+                            </div>
+                            <br />
+                            <p><b>Resultado: </b>{modalRule.result}</p>
+                            </div>
+                        </div>
+                        </div>
+                    </Fade>
+                </Modal>
+
+                <Modal open={openRuleModal} onClose={handleRuleClose} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{timeout: 500,}}>
+                    <Fade in={openRuleModal}>
+                    <div className="modalBox">
+                        <div className="closeBtn" onClick={handleRuleClose}>&times;</div>
+                        <div className="modalContent">
+                        <div className="modalTitle">
+                            <h3><b>Selección de Reglas</b></h3>
+                        </div>
+                        <div className="modalText">
+                            <p>En esta página podrás elegir aquellas reglas que conformarán el nuevo flujo a añadir, así como darle un nombre a tu flujo para así identificarlo.</p>
+                            <p>Para conocer los detalles de cada una de las reglas puedes dar click en el botón de color verde con el ícono <QuestionMarkIcon style={{fontSize: "16px"}} />, al hacerlo podrás consultar la información técnica de la regla.</p>
+                            <p>Al añadir una regla al flujo podrás observar que la sección con el nombre <i>Orden de Reglas</i> se actualizará y te indicará el orden en el que serán ejecutadas las reglas del flujo.</p>
+                            <p>Al finalizar de añadir reglas, da click en al botón <i>Siguiente</i> que te llevará a la sección donde podrás parametrizar las reglas que has seleccionado.</p>
+                        </div>
+                        </div>
+                    </div>
+                    </Fade>
+                </Modal>
+
+                <Modal open={openParamModal} onClose={handleParamClose} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{timeout: 500,}}>
+                    <Fade in={openParamModal}>
+                    <div className="modalBox">
+                        <div className="closeBtn" onClick={handleParamClose}>&times;</div>
+                        <div className="modalContent">
+                        <div className="modalTitle">
+                            <h3><b>Parametrización</b></h3>
+                        </div>
+                        <div className="modalText">
+                            <p>En esta página podrás añadir los parámetros necesarios a las reglas que has seleccionado. Se recomienda que tengas a la mano tu fuente de datos y que previamente hayas dado de alta cualquier archivo que necesites para que el proceso de parametrización sea más sencillo y también para asegurar el buen funcionamiento del flujo que será añadido</p>
+                            <p>Al finalizar la parametrización de las reglas da click en el botón <i>Añadir</i> para agregar el flujo al DataHub.</p>
+                        </div>
+                        </div>
+                    </div>
+                    </Fade>
+                </Modal>
+
                 <div className="top">
                     <h1 className="title">{titles[page]}</h1>
+                    <button className="helpButton" onClick={handlers[page]}><QuestionMarkIcon /></button>
                 </div>
                 <div className={ page !== 0 ? "top flowname none" : "top flowname"}>
                     <p className="ruletitle">Nombre</p>
@@ -234,11 +337,10 @@ export const NewFlow = () =>{
                     page === 0 ? (
 
                         <div className="bottom flow">
-
                             {
                                 availableRules.map((item, index) => (
                                     <div className="col" key={index}>
-                                        <input type="checkbox" value={item.value} onChange={handleChange} name={item.name} /> <span className="ruletitle">{item.name}</span>
+                                        <input type="checkbox" value={item.value} onChange={handleChange} name={item.name} /> <span className="ruletitle">{item.name} <button onClick={() => handleOpen(item)}><QuestionMarkIcon className="icon" /></button></span>
                                         <p className="ruledesc">{item.desc}</p>
                                     </div>
                                 ))
