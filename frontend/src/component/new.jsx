@@ -24,9 +24,7 @@ export const New = () =>{
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleSubmit = async (e) => {
-
-        e.preventDefault();
+    const handleSubmit = async () => {
 
         const form = new FormData();
         form.append('dataSource', file);
@@ -43,7 +41,6 @@ export const New = () =>{
             imageWidth: 100,
             imageHeight: 100,
             imageAlt: 'Custom image',
-            confirmButtonColor: "#000",
             showConfirmButton: false,
             allowOutsideClick: false
           });
@@ -58,28 +55,19 @@ export const New = () =>{
 
         const data = await res.json();
 
-        if(res.status !== 200 && data.msg !== ''){
+        if(res.status !== 200){
             Swal.fire({
                 title: 'Error al cargar la fuente de datos',
                 text: 'Revise de nuevo los campos.',
                 icon: 'error',
-                button: 'Volver a intentarlo',
-                confirmButtonColor: "#000",
+                showConfirmButton: false,
                 timer: "10000"
             });
-
-            setFile('');
-            setProjectName('');
-            setFileType('');
-            setSep('');
-            setEnc('');
-
         }else{
             Swal.fire({
                 title: 'Carga exitosa',
-                text: data.msg + ' : ' + data.objID,
+                text: data.msg + ': ' + data.name,
                 icon: 'success',
-                button: 'Continuar',
                 showConfirmButton: false,
                 timer: "10000"
             })

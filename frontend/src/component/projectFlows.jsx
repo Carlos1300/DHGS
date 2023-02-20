@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "../general.scss";
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from "react-router-dom";
-// import { ProjectContext } from "../context/projectContext";
 import Swal from 'sweetalert2'
 import Modal from '@mui/material/Modal';
 import Backdrop from '@mui/material/Backdrop';
@@ -56,25 +55,21 @@ export const ProjectFlows = () => {
       body: JSON.stringify(id),
     });
 
-    const data = await res.json();
-
-    if(res.status !== 200 && data.msg !== ''){
+    if(res.status !== 200){
         Swal.fire({
-            title: 'Error al cargar la fuente de datos',
-            text: 'Revise de nuevo los campos.',
+            title: 'Error al aplicar el flujo',
+            text: 'Por favor, revise de nuevo los parámetros de su flujo.',
             icon: 'error',
-            button: 'Volver a intentarlo',
-            confirmButtonColor: "#000",
+            showConfirmButton: false,
             timer: "10000"
         });
 
     }else{
         Swal.fire({
             title: 'Aplicación exitosa',
-            text: data.msg,
+            text: 'Su flujo ha sido aplicado con éxito.',
             icon: 'success',
-            button: 'Continuar',
-            confirmButtonColor: "#000",
+            showConfirmButton: false,
             timer: "10000"
       })
     }

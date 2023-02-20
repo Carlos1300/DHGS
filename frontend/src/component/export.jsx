@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import Backdrop from '@mui/material/Backdrop';
 import Fade from '@mui/material/Fade';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import Swal from 'sweetalert2';
 
 const API = process.env.REACT_APP_API;
 
@@ -20,6 +21,16 @@ export const Export = () => {
     const handleClose = () => setOpen(false);
 
     const handleSubmit = async () => {
+        Swal.fire({
+            title: 'Exportando datos.',
+            html: 'Su fuente de datos está siendo procesada para exportarse, por favor espere.<br><br><b><style="color: crimson;">No cierre esta ventana hasta el que proceso haya terminado.</style></b>',
+            imageUrl: 'https://www.tuyu.mx/assets/loader.gif',
+            imageWidth: 100,
+            imageHeight: 100,
+            imageAlt: 'Custom image',
+            showConfirmButton: false,
+            allowOutsideClick: false
+          });
 
         var project = '';
 
@@ -35,7 +46,6 @@ export const Export = () => {
             enc: enc,
             outputName: outputName
         }
-        console.log(ExportJSON)
 
         const res = await fetch(API + '/export_data/' + localStorage.getItem('email'),{
             method: 'POST',
@@ -48,33 +58,67 @@ export const Export = () => {
 
         const data = await res.json();
 
-        if (data.type === 'xlsx'){
-            let ws = utils.json_to_sheet(data.data);
-            let wb = utils.book_new();
-            utils.book_append_sheet(wb, ws, "Hoja1");
-            writeFile(wb, data.filename);
-
-            setProjectName('');
-
-        } else if(data.type === 'csv'){
-            const url = window.URL.createObjectURL(new Blob(["\ufeff", data.data]));
-            const link = document.createElement('a');
-            link.href = url
-            link.setAttribute('download', data.filename)
-            document.body.appendChild(link)
-            link.click()
-
-            setProjectName('');
+        if(res.status !== 200){
+            Swal.fire({
+                title: 'Error al exportar la fuente de datos',
+                text: 'Contacte a soporte técnico.',
+                icon: 'error',
+                showConfirmButton: false,
+                timer: "10000"
+            });
         }else{
-            const blob = new Blob(["\ufeff", data.data], { type: "text/plain" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.download = data.filename;
-            link.href = url;
-            link.click();
+            if (data.type === 'xlsx'){
+                let ws = utils.json_to_sheet(data.data);
+                let wb = utils.book_new();
+                utils.book_append_sheet(wb, ws, "Hoja1");
+                writeFile(wb, data.filename);
 
-            setProjectName('');
+                Swal.fire({
+                    title: 'Exportación exitosa',
+                    text: 'Se han exportado los datos en un archivo XLSX.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: "10000"
+                });
+    
+                setProjectName('');
+    
+            } else if(data.type === 'csv'){
+                const url = window.URL.createObjectURL(new Blob(["\ufeff", data.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', data.filename);
+                document.body.appendChild(link);
+                link.click();
+
+                Swal.fire({
+                    title: 'Exportación exitosa',
+                    text: 'Se han exportado los datos en un archivo CSV.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: "10000"
+                });
+    
+                setProjectName('');
+            }else{
+                const url = URL.createObjectURL(new Blob(["\ufeff", data.data], { type: "text/plain" }));
+                const link = document.createElement("a");
+                link.download = data.filename;
+                link.href = url;
+                link.click();
+
+                Swal.fire({
+                    title: 'Exportación exitosa',
+                    text: 'Se han exportado los datos en un archivo TXT.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: "10000"
+                });
+    
+                setProjectName('');
+            }
         }
+
     }
 
     return(
@@ -151,7 +195,7 @@ export const Export = () => {
                                 <option value="csv" selected>CSV</option>
                                 <option value="xlsx">XLSX</option>
                                 <option value="txt">TXT</option>
-                                <option value="json">JSON</option>
+                                {/* <option value="json">JSON</option> */}
                             </select>
                         </div>
                         <div className="formInput">

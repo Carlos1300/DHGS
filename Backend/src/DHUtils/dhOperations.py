@@ -294,7 +294,7 @@ def validar_fonetico(datasources, mainParams, stepdict = None):
     )
     
     result["metaphone dist%"] = (result["freq metaphone"] / len(df_main.index))*100
-    result = result.drop_duplicates()
+    result.drop_duplicates(inplace=True)
     
     doc = json.loads(result.to_json(orient='table'))
     doc['name'] = "Foneticos - " + origen
@@ -456,6 +456,7 @@ def get_value_freq(datasources, mainParams, stepdict = None):
     )
     df_final['Dst %'] = round(((df_final['Frequency'] / df_final.shape[0])*100), 3)
     df_final["Category"] = ""
+    df_final.drop_duplicates(inplace=True)
     
     doc = json.loads(df_final.to_json(orient='table'))
     doc['name'] = "Frequency - " + col_src

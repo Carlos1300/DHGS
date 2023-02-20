@@ -138,7 +138,7 @@ export const RulesTable = () => {
                     <h3><b>Página de Mis Reglas</b></h3>
                 </div>
                 <div className="modalText">
-                  <p>En esta página podrás encontrar todas las reglas que has agregado al proyecto activo, también tendrás la opción de copiar su nombre al portapapeles para después pegarlo en alguna regla que lo requiera, para esto simplemente da click en la opción <i>Copiar</i>.</p>
+                  <p>En esta página podrás encontrar todas las reglas que has agregado al proyecto activo, también tendrás la opción de copiar su nombre al portapapeles para después pegarlo en alguna regla de flujo que lo requiera, para esto simplemente da click en la opción <i>Copiar</i>.</p>
                 </div>
               </div>
             </div>

@@ -4,10 +4,7 @@ from flask_cors import CORS
 from DHUtils import dhRepository, DatahubEx, dhOperations, dhLogs
 import pandas as pd
 from datetime import datetime
-import csv
-
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
-
 import json
 
 app = Flask(__name__)
@@ -162,6 +159,19 @@ def get_projects(email):
 
 @app.route('/addProject/<email>', methods=['POST'])
 def add_project(email):
+    """Función de crear la base de datos de un nuevo proyecto en el DataHub 
+    y de extraer la información contenida en un archivo para añadirla
+    a una colección de la base de datos creada.
+
+    Args:
+        email (str): Email del usuario que hace la petición POST para 
+                    añadir el nuevo proyecto
+
+    Returns:
+        JSON: Respuesta tipo JSON que indica si el proyecto y los datos
+            han sido añadidos o no.
+    """
+    
     add_project_request = {
         "file": request.files['dataSource'],
         "name": request.form['pName'],
@@ -172,25 +182,24 @@ def add_project(email):
         "sheet_name": request.form['sheet']
     }
     
-    if not add_project_request['name'] in MONGO_CLIENT.list_database_names():
-        dhRepository.create_database(MONGO_CLIENT, add_project_request['name'])
-    
     doc = dhRepository.BuscarRegistroEnBD('Projects', 'ProjectName', add_project_request['name'], 'datahub')
     if doc == None:
-        new_project = MONGO_CLIENT['datahub']['Projects'].insert_one({
+        MONGO_CLIENT['datahub']['Projects'].insert_one({
         "ProjectName": add_project_request['name'],
         "DataBaseName": add_project_request['name'],
         "User": email,
         "DateCreated": str(datetime.now().day) + '/' + str(datetime.now().month) + '/' + str(datetime.now().year)
         })
+
+        if not add_project_request['name'] in MONGO_CLIENT.list_database_names():
+            dhRepository.create_database(MONGO_CLIENT, add_project_request['name'])
         
-        msg = 'Se ha agregado con éxito la fuente de datos con el ID de objeto'
-        project_id = str(ObjectId(new_project.inserted_id))
+        msg = 'Se ha agregado con éxito la fuente de datos del proyecto'
+        project = add_project_request["name"]
     
     else:
-        msg = 'Se ha actualizado con éxito la fuente de datos con el ID de objeto'
-        print(doc)
-        project_id = str(doc['_id'])
+        msg = 'Se ha actualizado con éxito la fuente de datos del proyecto'
+        project = doc['ProjectName']
         
     dhRepository.EstablecerBDProjecto(add_project_request['name'])
     df_Fuente, reg =  DatahubEx.CargarFuente_a_Dataframe(add_project_request)
@@ -198,7 +207,7 @@ def add_project(email):
     
     return jsonify({
         'msg': msg,
-        'objID': project_id
+        'name': project
         })
 
 @app.route('/resume/<project>', methods=['GET'])
@@ -710,14 +719,15 @@ def export_data(email):
 
     if export_json['fileType'] == 'csv':
         output_name = export_json['outputName'] + '.csv'
-        return jsonify({'data': dtfrm.to_csv(index=False, header=True), 'type': 'csv', 'filename': output_name})
-    
+        return jsonify({'data': dtfrm.to_csv(index=False, header=True), 'type': 'csv', 'filename': output_name}), 200 
     elif export_json['fileType'] == 'xlsx':
         output_name = export_json['outputName'] + '.xlsx'
-        return jsonify({'data': json.loads(json.dumps(dictObj)), 'type': 'xlsx', 'filename': output_name})
-    else:
+        return jsonify({'data': json.loads(json.dumps(dictObj)), 'type': 'xlsx', 'filename': output_name}), 200
+    elif export_json['fileType'] == 'txt':
         output_name = export_json['outputName'] + '.txt'
-        return jsonify({'data': dtfrm.to_csv(sep='\t', index=False, header=True), 'type': 'txt', 'filename': output_name})
+        return jsonify({'data': dtfrm.to_csv(sep='\t', index=False, header=True), 'type': 'txt', 'filename': output_name}), 200
+    else:
+        return jsonify({'data': 'Null'}), 401
 
 if __name__ == "__main__":
     app.run(debug=True)
