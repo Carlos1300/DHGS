@@ -1,0 +1,31 @@
+[{
+  "_id": {
+    "$oid": "63601f8c908c5b216f91dde2"
+  },
+  "name": "Carlos Ávila",
+  "email": "carlos.avila@scanda.com.mx",
+  "password": "12345",
+  "address": "Naucalpan",
+  "country": "México",
+  "tel": "5522335566"
+},{
+  "_id": {
+    "$oid": "6398a2b3c64624de182a566c"
+  },
+  "address": "Miguel Laurent",
+  "country": "Mexico",
+  "email": "juan.sevilla@scanda.com.mx",
+  "password": "joseph",
+  "tel": "112233445566",
+  "name": "Joseph Martinez"
+},{
+  "_id": {
+    "$oid": "63f4021403dfaf56a8ba4ef2"
+  },
+  "name": "Nuevo Usuario",
+  "email": "correo@scanda.com.mx",
+  "password": "contraseña",
+  "address": "Miguel Laurent",
+  "country": "México",
+  "tel": "1122336655"
+}]

@@ -1,0 +1,400 @@
+[{
+  "_id": {
+    "$oid": "63d2b004d89e31fafe5b4f4c"
+  },
+  "Name": "ScandaDefPrueba",
+  "Operations": [
+    {
+      "dispname": "Cargar fuente",
+      "order": 0,
+      "name": "load_source_main"
+    },
+    {
+      "dispname": "Aplicar sinónimo",
+      "name": "apply_synonymous",
+      "order": 1,
+      "rule_name": "TVCOPPEL",
+      "column_src_appsyno": "tipodeservicio"
+    },
+    {
+      "dispname": "Extracción del tipo de columna",
+      "name": "get_column_type",
+      "order": 2
+    },
+    {
+      "dispname": "Validar fonético",
+      "name": "validar_fonetico",
+      "order": 3,
+      "col_origen_valfon": "nombrezona"
+    },
+    {
+      "dispname": "Obtener substring",
+      "name": "get_substring",
+      "order": 4,
+      "init_word_substring": "0",
+      "total_words_substring": "5",
+      "separator_substring": " ",
+      "join_char_substring": "--",
+      "col_origen_substring": "nombrezona",
+      "col_destino_substring": "sub_nombrezona"
+    },
+    {
+      "dispname": "Concatenar columnas",
+      "name": "concat_columns",
+      "order": 5,
+      "join_char_concatcols": "->",
+      "col_origen_concatcols": "tienda, ruta",
+      "col_destino_concatcols": "rutatienda"
+    },
+    {
+      "dispname": "Crear máscara",
+      "name": "create_mask",
+      "order": 6,
+      "column_src_crmk": "nombrecalle",
+      "column_dest_crmk": "masked_calle"
+    },
+    {
+      "dispname": "Guardar Datos",
+      "order": 7,
+      "name": "save_source_main",
+      "collection": "DataCleaned"
+    }
+  ],
+  "User": "carlos.avila@scanda.com.mx",
+  "DateCreated": "26/1/2023"
+},{
+  "_id": {
+    "$oid": "63d73d1060e66853de1a01c7"
+  },
+  "Name": "ScandaDefPrueba2",
+  "Operations": [
+    {
+      "dispname": "Cargar fuente",
+      "order": 0,
+      "name": "load_source_main"
+    },
+    {
+      "dispname": "Texto a mayúsculas",
+      "name": "upper_col",
+      "order": 1,
+      "apply_cols_upcol": "clientname"
+    },
+    {
+      "dispname": "Texto a minúsculas",
+      "name": "lower_col",
+      "order": 2,
+      "apply_cols_locol": "email"
+    },
+    {
+      "dispname": "Transformación a booleano",
+      "name": "num_to_bool",
+      "order": 3,
+      "apply_cols_nubo": "regclient"
+    },
+    {
+      "dispname": "Eliminación de espacios",
+      "name": "trim_col",
+      "order": 4,
+      "apply_cols_trim": "nombrecalle",
+      "all": "Si"
+    },
+    {
+      "dispname": "Reemplazar con excepción",
+      "name": "replace_char_except",
+      "order": 5,
+      "apply_cols_reexchar": "nombreciudad",
+      "excluded_chars": "A,E,I,O,U",
+      "replace_char": "0"
+    },
+    {
+      "dispname": "Eliminación de acentos",
+      "name": "rm_accents",
+      "order": 6,
+      "apply_cols_rmacc": "clientname"
+    },
+    {
+      "dispname": "Revisar correo electrónico",
+      "name": "check_email",
+      "order": 7,
+      "apply_cols_cheml": "email"
+    },
+    {
+      "dispname": "Ajustar longitud",
+      "name": "adjust_length",
+      "order": 8,
+      "apply_cols_adjlen": "foliocontrol",
+      "length_adj": "4"
+    },
+    {
+      "dispname": "Cálculo de columnas",
+      "name": "calculate_expression",
+      "order": 9,
+      "value_1_calcexp": "cantidad",
+      "operator_calcexp": "*",
+      "value_2_calcexp": "preciovta",
+      "col_dest_calcexp": "preciototalventa"
+    },
+    {
+      "dispname": "Reemplazar caracter",
+      "name": "replace_char",
+      "order": 10,
+      "apply_cols_rechar": "ruta",
+      "rep_char_values": "8",
+      "rep_value": "x"
+    },
+    {
+      "dispname": "Guardar Datos",
+      "order": 11,
+      "name": "save_source_main",
+      "collection": "DataCleaned"
+    }
+  ],
+  "User": "carlos.avila@scanda.com.mx",
+  "DateCreated": "29/1/2023"
+},{
+  "_id": {
+    "$oid": "63d758d560e760b486b82873"
+  },
+  "Name": "ScandaDefPrueba3",
+  "Operations": [
+    {
+      "dispname": "Cargar fuente",
+      "order": 0,
+      "name": "load_source_main"
+    },
+    {
+      "dispname": "Validar columnas contra layout",
+      "name": "validate_sourcecolumns_vs_layout",
+      "order": 1,
+      "layout_name_validate": "COPPEL LAYOUT"
+    },
+    {
+      "dispname": "Extraer layout desde una fuente",
+      "name": "extract_layout_from_source",
+      "order": 2,
+      "layout_name_extract": "COPPEL LAYOUT"
+    },
+    {
+      "dispname": "Validar tipos de datos con layout",
+      "name": "validate_vs_layout_datatypes",
+      "order": 3,
+      "layout_name_datatype": "COPPEL LAYOUT"
+    },
+    {
+      "dispname": "Guardar Datos",
+      "order": 4,
+      "name": "save_source_main",
+      "collection": "DataCleaned"
+    }
+  ],
+  "User": "carlos.avila@scanda.com.mx",
+  "DateCreated": "29/1/2023"
+},{
+  "_id": {
+    "$oid": "63e209b43bf4486c8be8cae7"
+  },
+  "Name": "bbbb",
+  "Operations": [
+    {
+      "dispname": "Cargar fuente",
+      "order": 0,
+      "name": "load_source_main"
+    },
+    {
+      "dispname": "Validar fonético",
+      "name": "validar_fonetico",
+      "order": 1,
+      "col_origen_valfon": "nombreciudad"
+    },
+    {
+      "dispname": "Obtener frecuencia de valores",
+      "name": "get_value_freq",
+      "order": 2,
+      "separator_fqval": " ",
+      "init_pos_fqval": "0",
+      "final_pos_fqval": "1",
+      "column_src_fqval": "nombreciudad",
+      "column_id_fqval": "13",
+      "one_word_fqval": "No"
+    },
+    {
+      "dispname": "Guardar Datos",
+      "order": 3,
+      "name": "save_source_main",
+      "collection": "DataCleaned"
+    }
+  ],
+  "User": "carlos.avila@scanda.com.mx",
+  "DateCreated": "7/2/2023"
+},{
+  "_id": {
+    "$oid": "63e65dc9c26cbb01355c40da"
+  },
+  "Name": "ScandaAll",
+  "Operations": [
+    {
+      "dispname": "Cargar fuente",
+      "order": 0,
+      "name": "load_source_main"
+    },
+    {
+      "dispname": "Aplicar sinónimo",
+      "name": "apply_synonymous",
+      "order": 1,
+      "rule_name": "TVCOPPEL",
+      "column_src_appsyno": "tipodeservicio"
+    },
+    {
+      "dispname": "Extracción del tipo de columna",
+      "name": "get_column_type",
+      "order": 2
+    },
+    {
+      "dispname": "Validar rango numérico",
+      "name": "validate_numeric_range",
+      "order": 3,
+      "rule_name_valnr": "RANGOS PRECIOS",
+      "column_src_valnr": "preciovta"
+    },
+    {
+      "dispname": "Existencia en catálogo",
+      "name": "validate_exist_in_catalog",
+      "order": 4,
+      "catalog_id": "4",
+      "catalog_name": "SEPOMEX CATALOG",
+      "column_src": "num_codigopostal",
+      "key_column_name": "d_codigo"
+    },
+    {
+      "dispname": "Unir valores de catálogo",
+      "name": "apply_join_from_value_vs_catalog",
+      "order": 5,
+      "catalog_id": "4",
+      "catalog_name": "SEPOMEX CATALOG",
+      "column_src": "num_codigopostal",
+      "column_dest": "join_with_catalog",
+      "key_column_name": "d_codigo",
+      "value_column_name": "d_estado"
+    },
+    {
+      "dispname": "Validar fonético",
+      "name": "validar_fonetico",
+      "order": 6,
+      "col_origen_valfon": "nombrezona"
+    },
+    {
+      "dispname": "Obtener frecuencia de valores",
+      "name": "get_value_freq",
+      "order": 7,
+      "separator_fqval": " ",
+      "init_pos_fqval": "0",
+      "final_pos_fqval": "1",
+      "column_src_fqval": "nombrezona",
+      "column_id_fqval": "15",
+      "one_word_fqval": ""
+    },
+    {
+      "dispname": "Obtener substring",
+      "name": "get_substring",
+      "order": 8,
+      "init_word_substring": "0",
+      "total_words_substring": "5",
+      "separator_substring": " ",
+      "join_char_substring": "--",
+      "col_origen_substring": "nombrezona",
+      "col_destino_substring": "sub_nombrezona"
+    },
+    {
+      "dispname": "Concatenar columnas",
+      "name": "concat_columns",
+      "order": 9,
+      "join_char_concatcols": "->",
+      "col_origen_concatcols": "tienda, ruta",
+      "col_destino_concatcols": "rutatienda"
+    },
+    {
+      "dispname": "Texto a mayúsculas",
+      "name": "upper_col",
+      "order": 10,
+      "apply_cols_upcol": "clientname"
+    },
+    {
+      "dispname": "Texto a minúsculas",
+      "name": "lower_col",
+      "order": 11,
+      "apply_cols_locol": "email"
+    },
+    {
+      "dispname": "Transformación a booleano",
+      "name": "num_to_bool",
+      "order": 12,
+      "apply_cols_nubo": "regclient"
+    },
+    {
+      "dispname": "Eliminación de espacios",
+      "name": "trim_col",
+      "order": 13,
+      "apply_cols_trim": "nombrecalle",
+      "all": "Si"
+    },
+    {
+      "dispname": "Reemplazar con excepción",
+      "name": "replace_char_exc",
+      "order": 14,
+      "apply_cols_reexchar": "nombreciudad",
+      "excluded_chars": "A,E,I,O,U",
+      "replace_char": "0"
+    },
+    {
+      "dispname": "Eliminación de acentos",
+      "name": "rm_accents",
+      "order": 15,
+      "apply_cols_rmacc": "clientname"
+    },
+    {
+      "dispname": "Revisar correo electrónico",
+      "name": "check_email",
+      "order": 16,
+      "apply_cols_cheml": "email"
+    },
+    {
+      "dispname": "Crear máscara",
+      "name": "create_mask",
+      "order": 17,
+      "column_src_crmk": "nombrecalle",
+      "column_dest_crmk": "masked_calle"
+    },
+    {
+      "dispname": "Ajustar longitud",
+      "name": "adjust_length",
+      "order": 18,
+      "apply_cols_adjlen": "foliocontrol",
+      "length_adj": "4"
+    },
+    {
+      "dispname": "Cálculo de columnas",
+      "name": "calculate_expression",
+      "order": 19,
+      "value_1_calcexp": "cantidad",
+      "operator_calcexp": "*",
+      "value_2_calcexp": "preciovta",
+      "col_dest_calcexp": "preciototalventa"
+    },
+    {
+      "dispname": "Reemplazar caracter",
+      "name": "replace_char",
+      "order": 20,
+      "apply_cols_rechar": "ruta",
+      "rep_char_values": "8",
+      "rep_value": "x"
+    },
+    {
+      "dispname": "Guardar Datos",
+      "order": 21,
+      "name": "save_source_main",
+      "collection": "DataCleaned"
+    }
+  ],
+  "User": "carlos.avila@scanda.com.mx",
+  "DateCreated": "10/2/2023"
+}]

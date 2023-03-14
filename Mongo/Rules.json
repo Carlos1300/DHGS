@@ -1,0 +1,751 @@
+[{
+  "_id": {
+    "$oid": "639d7d206bf480f185a77d16"
+  },
+  "name": "Aplicar sinónimo",
+  "value": "apply_synonymous",
+  "params": [
+    {
+      "name": "rule_name",
+      "type": "text",
+      "display_name": "Nombre de la regla",
+      "desc": "Regla a aplicar",
+      "modalDesc": "Nombre de la regla del tipo sinónimo que se utilizará para hacer el cambio de palabras."
+    },
+    {
+      "name": "column_src_appsyno",
+      "type": "text",
+      "display_name": "Columna de aplicación",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna donde se llevará a cabo el cambio de palabras."
+    }
+  ],
+  "description": "Aplica una sustitución de sinónimos a la columna.",
+  "modalDesc": "Regla encargada de buscar palabras en una columna de la fuente de datos original y cambiarlas por otras utilizando una regla de tipo sinónimo previamente definida.",
+  "result": "Esta regla se aplica en la misma columna, es decir, su resultado se verá reflejado en la columna de aplicación."
+},{
+  "_id": {
+    "$oid": "639fef5615960ebbe111aff9"
+  },
+  "name": "Aplicar máscara",
+  "value": "apply_mask",
+  "params": [
+    {
+      "name": "mask_string_apply",
+      "type": "text",
+      "display_name": "Máscara de texto",
+      "desc": "Máscara a aplicar",
+      "modalDesc": "Texto con el que serán enmascarados los datos."
+    },
+    {
+      "name": "column_src_appmk",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna donde se llevará a cabo el enmascaramiento de los datos."
+    },
+    {
+      "name": "column_dest_appmk",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado de la regla."
+    }
+  ],
+  "description": "Aplica una máscara a la columna seleccionada.",
+  "modalDesc": "Regla encargada de aplicar una máscara definida por el usuario a una columna específica de la fuente de datos, es decir, el usuario podrá definir con que texto se enmascaran los datos. Ejemplo: Calle 118 Acolman (texto original) es enmascarado a CALLE (máscara definida por el cliente).",
+  "result": "El resultado de esta regla se verá reflejado en la columna de destino que haya definido el usuario."
+},{
+  "_id": {
+    "$oid": "639ff06515960ebbe111affc"
+  },
+  "name": "Extracción del tipo de columna",
+  "value": "get_column_type",
+  "params": [
+    {
+      "name": "None",
+      "modalDesc": "None",
+      "display_name": "None"
+    }
+  ],
+  "description": "Extrae los tipos de las columnas de la fuente de datos.",
+  "modalDesc": "Regla encargada de generar el sumario de datos e insertar este mismo a la sección de Perfilado de Datos. Este sumario describirá todas las columnas de la fuente de datos y podrá ser visible desde la sección Sumario de Datos.",
+  "result": "El resultado de esta regla será visible en la sección Sumario de Datos en el apartado Perfilado de Datos."
+},{
+  "_id": {
+    "$oid": "63a549155bfa6441ae3f2d20"
+  },
+  "name": "Validar columnas contra layout",
+  "value": "validate_sourcecolumns_vs_layout",
+  "params": [
+    {
+      "name": "layout_name_validate",
+      "type": "text",
+      "display_name": "Layout",
+      "desc": "Indique el nombre del layout",
+      "modalDesc": "Nombre del layout previamente definido."
+    }
+  ],
+  "description": "Comprueba que las columnas concuerden con el layout.",
+  "modalDesc": "Regla encargada de comprobar que las columnas definidas en el layout se encuentren en la fuente de datos. Con esto aseguramos que la integridad de la fuente de datos no fue alterada por ninguna fuente externa.",
+  "result": "Esta regla no tiene un resultado visible, se podría tomar como un filtro para continuar con la aplicación del flujo."
+},{
+  "_id": {
+    "$oid": "63a54ada5bfa6441ae3f2d22"
+  },
+  "name": "Extraer layout desde una fuente",
+  "value": "extract_layout_from_source",
+  "params": [
+    {
+      "name": "layout_name_extract",
+      "type": "text",
+      "display_name": "Layout",
+      "desc": "Indique el nombre del layout",
+      "modalDesc": "Nombre del layout previamente definido."
+    }
+  ],
+  "description": "Extrae un layout desde los datos fuente.",
+  "modalDesc": "Regla encargada de extraer información de un layout previamente definido, seleccionar las columnas existentes en él y cambiar las columnas de la fuente de datos para que coincidan con las del layout.",
+  "result": "El resultado de esta regla es una fuente de datos que contiene solo las columnas que se hayan definido en el layout. Útil para filtrar columnas que no se requieran y solamente trabajar con las seleccionadas."
+},{
+  "_id": {
+    "$oid": "63a54c495bfa6441ae3f2d24"
+  },
+  "name": "Validar tipos de datos con layout",
+  "value": "validate_vs_layout_datatypes",
+  "params": [
+    {
+      "name": "layout_name_datatype",
+      "desc": "Indique el nombre del layout",
+      "display_name": "Layout",
+      "type": "text",
+      "modalDesc": "Nombre del layout previamente definido."
+    }
+  ],
+  "description": "Comprueba que los tipos de datos concuerden con un layout.",
+  "modalDesc": "Regla encargada de comprobar que el tipo de dato de la fuente de datos concuerda con aquellos definidos en el layout.",
+  "result": "Esta regla no tiene un resultado visible, se podría tomar como un filtro para continuar con la aplicación del flujo."
+},{
+  "_id": {
+    "$oid": "63a54ceb5bfa6441ae3f2d25"
+  },
+  "name": "Validar rango numérico",
+  "value": "validate_numeric_range",
+  "params": [
+    {
+      "name": "rule_name_valnr",
+      "type": "text",
+      "display_name": "Nombre de la regla",
+      "desc": "Regla a aplicar",
+      "modalDesc": "Nombre de la regla del tipo rango numérico que se utilizará para hacer la revisión de valores."
+    },
+    {
+      "name": "column_src_valnr",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna donde se llevará a cabo la revisión de valores."
+    }
+  ],
+  "description": "Comprueba el rango numérico en la columna deseada.",
+  "modalDesc": "Regla encargada de comprobar que los datos numéricos se encuentren dentro de un rango específico utilizando una regla de tipo rango numérico previamente definida.",
+  "result": "El resultado de la aplicación se la regla aparecerá en una nueva columna con el sufijo '_numeric_range'."
+},{
+  "_id": {
+    "$oid": "63a54da05bfa6441ae3f2d26"
+  },
+  "name": "Existencia en catálogo",
+  "value": "validate_exist_in_catalog",
+  "params": [
+    {
+      "name": "catalog_name_excat",
+      "type": "text",
+      "display_name": "Nombre del catálogo",
+      "desc": "Catálogo a emplear",
+      "modalDesc": "Nombre del catálogo donde se verificará la existencia del dato."
+    },
+    {
+      "name": "column_src_excat",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna con los valores a validar su existencia."
+    },
+    {
+      "name": "key_column_name_excat",
+      "type": "text",
+      "display_name": "Columna del catálogo",
+      "desc": "Columna base",
+      "modalDesc": "Columna del catálogo con la que se comparará."
+    }
+  ],
+  "description": "Indica si un registro existe o no en el catálogo seleccionado.",
+  "modalDesc": "Regla encargada de comprobar si los datos de una columna de la fuente de datos existen dentro de un catálogo en específico.",
+  "result": "El resultado de la aplicación se la regla aparecerá en una nueva columna con el nombre 'exist_catalog' donde una 'E' significa que el valor existe en el catálogo y 'NE' significa que no existe en el catálogo."
+},{
+  "_id": {
+    "$oid": "63a558575bfa6441ae3f2d28"
+  },
+  "name": "Unir valores de catálogo",
+  "value": "apply_join_from_value_vs_catalog",
+  "params": [
+    {
+      "name": "catalog_name_joincat",
+      "type": "text",
+      "display_name": "Nombre del catálogo",
+      "desc": "Catálogo a emplear",
+      "modalDesc": "Nombre del catálogo con el que se realizará la unión."
+    },
+    {
+      "name": "column_src_joincat",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna utilizada para llevar a cabo la unión."
+    },
+    {
+      "name": "column_dest_joincat",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde se encontrará el resultado de la unión."
+    },
+    {
+      "name": "key_column_name_joincat",
+      "type": "text",
+      "display_name": "Columna del catálogo",
+      "desc": "Columna base",
+      "modalDesc": "Columna del catálogo utilizada para llevar a cabo la unión."
+    },
+    {
+      "name": "value_column_name_joincat",
+      "type": "text",
+      "display_name": "Valor del catálogo a unir",
+      "desc": "Valor base",
+      "modalDesc": "Valores del catálogo que serán agregados a la fuente de datos original."
+    }
+  ],
+  "description": "Aplica una función de concatenación con las columnas del catálogo.",
+  "modalDesc": "Regla encargada de unir valores de un catálogo a nuestra fuente de datos original. Ejemplo: Añadir la columna 'Estados' del catálogo a la fuente de datos original utilizando la columna 'Código Postal' de la fuente de datos original. ",
+  "result": "El resultado de la unión será visible en la columna de destino definida por el usuario."
+},{
+  "_id": {
+    "$oid": "63a55a835bfa6441ae3f2d29"
+  },
+  "name": "Extraer máscara de texto",
+  "value": "extract_mask_from_text",
+  "params": [
+    {
+      "name": "mask_string_extract",
+      "type": "text",
+      "display_name": "Texto a extraer",
+      "desc": "Texto a extraer",
+      "modalDesc": "Texto que será buscado en los valores de la columna."
+    },
+    {
+      "name": "column_src_exmk",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna donde se buscará el texto."
+    },
+    {
+      "name": "column_dest_exmk",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado de la búsqueda."
+    }
+  ],
+  "description": "Extrae una máscara de texto de los datos.",
+  "modalDesc": "Regla encargada de extraer la máscara del texto de una columna en específico. Esta regla es útil para descubrir si el texto que se tiene en la columna posee una máscara o no.",
+  "result": "El resultado de esta regla se verá reflejado en la columna de destino que haya definido el usuario. Este resultado contendrá la máscara si es que se encontró, de otro modo su valor será el de un texto vacío."
+},{
+  "_id": {
+    "$oid": "63a55d195bfa6441ae3f2d2c"
+  },
+  "name": "Validar fonético",
+  "value": "validar_fonetico",
+  "params": [
+    {
+      "name": "col_origen_valfon",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna en la que se aplicará la regla."
+    }
+  ],
+  "description": "Valida una columna dada por medio del algoritmo fonético soundex.",
+  "modalDesc": "Regla encargada de encontrar los valores de los fonéticos de una columna específica de la fuente de datos original e insertar este registro a la sección de Perfilado de Datos.",
+  "result": "El resultado de esta regla será visible en la sección Fonéticos del apartado de Perfilado de Datos."
+},{
+  "_id": {
+    "$oid": "63a55e945bfa6441ae3f2d2d"
+  },
+  "name": "Obtener frecuencia de valores",
+  "value": "get_value_freq",
+  "params": [
+    {
+      "name": "separator_fqval",
+      "type": "text",
+      "display_name": "Separador",
+      "desc": "Separador de texto",
+      "modalDesc": "Caracter que separa las palabras de la frase."
+    },
+    {
+      "name": "init_pos_fqval",
+      "type": "text",
+      "display_name": "Posición inicial",
+      "desc": "Punto de partida",
+      "modalDesc": "Desde qué posición se empezarán a evaluar las palabras de la frase."
+    },
+    {
+      "name": "final_pos_fqval",
+      "type": "text",
+      "display_name": "Posición final",
+      "desc": "Punto de detenimiento",
+      "modalDesc": "Hasta qué posición se evaluarán las palabras de la frase."
+    },
+    {
+      "name": "column_src_fqval",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna de la fuente de datos de la que se quieran evaluar sus frecuencias."
+    },
+    {
+      "name": "column_id_fqval",
+      "type": "text",
+      "display_name": "ID de columna",
+      "desc": "ID de columna",
+      "modalDesc": "Posición de la columna en la fuente de datos."
+    },
+    {
+      "name": "one_word_fqval",
+      "type": "text",
+      "display_name": "Palabra",
+      "desc": "Palabra a evaluar",
+      "modalDesc": "Si se desea evaluar solo una palabra de la fuente de datos."
+    }
+  ],
+  "description": "Obtiene la frecuencia de una palabra en las posiciones establecidas.",
+  "modalDesc": "Regla encargada de extraer la cantidad de veces que aparecen las palabras dentro de las frase de una columna específica.",
+  "result": "El resultado de esta regla será visible en la sección Frecuencias del apartado de Perfilado de Datos."
+},{
+  "_id": {
+    "$oid": "63a55fc05bfa6441ae3f2d2e"
+  },
+  "name": "Limpiar etiquetas HTML",
+  "value": "clean_html",
+  "params": [
+    {
+      "name": "chr_especiales_clhtml",
+      "type": "text",
+      "display_name": "Caracteres",
+      "desc": "Caracteres especiales a eliminar",
+      "modalDesc": "Si se desean eliminar los caracteres especiales HTML, de lo contrario no se hará este tratamiento."
+    },
+    {
+      "name": "salto_linea_clhtml",
+      "type": "text",
+      "display_name": "Salto de línea",
+      "desc": "Etiqueta de salto",
+      "modalDesc": "Etiqueta HTML que indica un salto de línea en el texto."
+    },
+    {
+      "name": "titulos_img_clhtml",
+      "type": "text",
+      "display_name": "Imágenes",
+      "desc": "Títulos de imágenes",
+      "modalDesc": "Si se desea recuperar el título de las imágenes, de lo contrario no se hará este tratamiento."
+    },
+    {
+      "name": "col_origen_clhtml",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna de la fuente de datos donde se aplicará la regla."
+    },
+    {
+      "name": "col_destino_clhtml",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado de la regla."
+    }
+  ],
+  "description": "Eliminar las etiquetas y todo lo relacionado con el lenguaje HTML.",
+  "modalDesc": "Regla encargada de eliminar las etiquetas de HTML que envuelven al texto de una columna especificada.",
+  "result": "El resultado de esta regla será visible en la columna de destino especificada por el usuario."
+},{
+  "_id": {
+    "$oid": "63a561845bfa6441ae3f2d2f"
+  },
+  "name": "Obtener substring",
+  "value": "get_substring",
+  "params": [
+    {
+      "name": "init_word_substring",
+      "type": "text",
+      "display_name": "Posición inicial",
+      "desc": "Palabra de origen",
+      "modalDesc": "Apartir de qué palabra se empezará a generar el substring."
+    },
+    {
+      "name": "total_words_substring",
+      "type": "text",
+      "display_name": "Palabras totales",
+      "desc": "Número total de palabras",
+      "modalDesc": "Numero de palabras que tendrá el substring."
+    },
+    {
+      "name": "separator_substring",
+      "type": "text",
+      "display_name": "Separador",
+      "desc": "Caracter del separador",
+      "modalDesc": "Caracter por el cual están separadas las palabras en la columna."
+    },
+    {
+      "name": "join_char_substring",
+      "type": "text",
+      "display_name": "Ensamblador",
+      "desc": "Caracter del ensamblador",
+      "modalDesc": "Caracter con el que se desea que las palabras extraídas sean unidas."
+    },
+    {
+      "name": "col_origen_substring",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna de la fuente de datos donde se aplicará la regla."
+    },
+    {
+      "name": "col_destino_substring",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado de la regla."
+    }
+  ],
+  "description": "Genera un substring con la columna seleccionada.",
+  "modalDesc": "Regla encargada de generar porciones de texto con las palabras que se encuentren en la columna especificada unidos por un caracter especificado.",
+  "result": "El resultado de esta regla será visible en la columna de destino especificada por el usuario."
+},{
+  "_id": {
+    "$oid": "63a562815bfa6441ae3f2d30"
+  },
+  "name": "Concatenar columnas",
+  "value": "concat_columns",
+  "params": [
+    {
+      "name": "join_char_concatcols",
+      "type": "text",
+      "display_name": "Ensamblador",
+      "desc": "Caracter del ensamblador",
+      "modalDesc": "Caracter utilizado para unir los valores de las columnas."
+    },
+    {
+      "name": "col_origen_concatcols",
+      "type": "text",
+      "display_name": "Columnas de origen",
+      "desc": "Columnas a utilizar",
+      "modalDesc": "Columnas cuyos valores serán concatenados."
+    },
+    {
+      "name": "col_destino_concatcols",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado de la regla."
+    }
+  ],
+  "description": "Concatena los valores de las columnas seleccionadas.",
+  "modalDesc": "Regla encargada de unir los valores contenidos en diferentes columnas unidas por un caracter especificado por el usuario.",
+  "result": "El resultado de esta regla será visible en la columna de destino especificada por el usuario."
+},{
+  "_id": {
+    "$oid": "63c4d8e6f20d55494f667675"
+  },
+  "name": "Remoción de negativos",
+  "value": "rm_negativos",
+  "params": [
+    {
+      "name": "apply_cols_rmne",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    }
+  ],
+  "description": "Elimina los valores negativos en las columnas especificadas.",
+  "modalDesc": "Regla encargada de eliminar los valores negativos de las columnas especificadas.",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c4d996f20d55494f667676"
+  },
+  "name": "Texto a mayúsculas",
+  "value": "upper_col",
+  "params": [
+    {
+      "name": "apply_cols_upcol",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    }
+  ],
+  "description": "Transforma a mayúsculas el texto de las columnas especificadas.",
+  "modalDesc": "Regla encargada de transformar el texto de las columnas especificadas en mayúsculas.",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c4d9f5f20d55494f667677"
+  },
+  "name": "Texto a minúsculas",
+  "value": "lower_col",
+  "params": [
+    {
+      "name": "apply_cols_locol",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    }
+  ],
+  "description": "Transforma a minúsculas el texto de las columnas especificadas.",
+  "modalDesc": "Regla encargada de transformar el texto de las columnas especificadas en minúsculas.",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c4da45f20d55494f667678"
+  },
+  "name": "Transformación a booleano",
+  "value": "num_to_bool",
+  "params": [
+    {
+      "name": "apply_cols_nubo",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    }
+  ],
+  "description": "Transforma a valores booleanos los valores (0, 1) de las columnas.",
+  "modalDesc": "Regla encargada de transformar los valores binarios (0, 1) en valores booleanos (False, True).",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c501b7d526dd3e96dbea01"
+  },
+  "name": "Eliminación de espacios",
+  "value": "trim_col",
+  "params": [
+    {
+      "name": "apply_cols_trim",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    },
+    {
+      "name": "all",
+      "type": "text",
+      "display_name": "Todos los espacios",
+      "desc": "'Si' o 'No'",
+      "modalDesc": "Si se desean o no eliminar todos los espacios existentes."
+    }
+  ],
+  "description": "Elimina los espacios en las columnas especificadas.",
+  "modalDesc": "Regla encargada de eliminar los espacios que se encuentren en las frases de las columnas especificadas.",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c50636d526dd3e96dbea02"
+  },
+  "name": "Reemplazar con excepción",
+  "value": "replace_char_exc",
+  "params": [
+    {
+      "name": "apply_cols_reexchar",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    },
+    {
+      "name": "excluded_chars",
+      "type": "text",
+      "display_name": "Caracteres excluidos",
+      "desc": "Ingrese los caracteres",
+      "modalDesc": "Caracteres que no sufrirán cambio alguno."
+    },
+    {
+      "name": "replace_char",
+      "type": "text",
+      "display_name": "Caracter de reemplazo",
+      "desc": "Caracter de reemplazo",
+      "modalDesc": "Caracter con el que se reemplazarán los valores que no estén excluidos."
+    }
+  ],
+  "description": "Reemplaza los demás valores a excepción de los especificados.",
+  "modalDesc": "Regla encargada de reemplazar con algún caracter aquellos valores que se encuentren fuera de una lista de excepción definida por el usuario.",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c50aa4d526dd3e96dbea03"
+  },
+  "name": "Eliminación de acentos",
+  "value": "rm_accents",
+  "params": [
+    {
+      "name": "apply_cols_rmacc",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    }
+  ],
+  "description": "Elimina los acentos que contengan las columnas especificadas.",
+  "modalDesc": "Regla encargada de eliminar los acentos que se encuentren en los valores de las columnas especificadas.",
+  "result": "El resultado de esta regla será visible en las mismas columnas seleccionadas."
+},{
+  "_id": {
+    "$oid": "63c50e2cd526dd3e96dbea04"
+  },
+  "name": "Revisar correo electrónico",
+  "value": "check_email",
+  "params": [
+    {
+      "name": "apply_cols_cheml",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas seleccionadas para aplicar la regla."
+    }
+  ],
+  "description": "Revisa que los correos electrónicos tengan estructura válida.",
+  "modalDesc": "Regla encargada de verificar que los correos electrónicos en las columnas especificadas tengan una buena estructura, es decir, que contengan un '@' y su correspondiente terminación '.com', '.net', etc.",
+  "result": "El resultado de esta regla será visible en una nueva columna con el sufijo '_valid_mail'."
+},{
+  "_id": {
+    "$oid": "63c5806ae5ef7a8309da2d70"
+  },
+  "name": "Crear máscara",
+  "value": "create_mask",
+  "params": [
+    {
+      "name": "column_src_crmk",
+      "type": "text",
+      "display_name": "Columna de origen",
+      "desc": "Columna de aplicación",
+      "modalDesc": "Columna donde será aplicada la regla."
+    },
+    {
+      "name": "column_dest_crmk",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado."
+    }
+  ],
+  "description": "Crea una máscara a partir del tipo de valores de la columna.",
+  "modalDesc": "Regla encargada de generar una máscara para los datos contenidos en la columna especificada, ejemplo: \"Calle 123\" se convertiría en \"AAAA NNN\".",
+  "result": "El resultado de esta regla será visible en la columna de destino especificada por el usuario."
+},{
+  "_id": {
+    "$oid": "63c8338065592d8a43b20816"
+  },
+  "name": "Ajustar longitud",
+  "value": "adjust_length",
+  "params": [
+    {
+      "name": "apply_cols_adjlen",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas en las que será aplicada la regla."
+    },
+    {
+      "name": "length_adj",
+      "type": "text",
+      "display_name": "Longitud deseada",
+      "desc": "Ingrese la longitud deseada",
+      "modalDesc": "Longitud que tendrán los datos después de la aplicación."
+    }
+  ],
+  "description": "Ajusta las columnas a la longitud deseada.",
+  "modalDesc": "Regla encargada de ajustar la longitud de los valores dentro de las columnas especificas a una longitud especificada por el usuario.",
+  "result": "El resultado de esta regla será visible en las mismas columnas de aplicación especificadas."
+},{
+  "_id": {
+    "$oid": "63d2b079dcc9d7d1591dbe81"
+  },
+  "name": "Cálculo de columnas",
+  "value": "calculate_expression",
+  "params": [
+    {
+      "name": "value_1_calcexp",
+      "type": "text",
+      "display_name": "Primera columna de calculo",
+      "desc": "Columna utilizada",
+      "modalDesc": "Primera columna seleccionada para aplicar la operación."
+    },
+    {
+      "name": "operator_calcexp",
+      "type": "text",
+      "display_name": "Operación",
+      "desc": "Signo de la operación",
+      "modalDesc": "Símbolo de la operación a aplicar (+, -, *, /)."
+    },
+    {
+      "name": "value_2_calcexp",
+      "type": "text",
+      "display_name": "Segunda columna de calculo",
+      "desc": "Columnas utilizada",
+      "modalDesc": "Segunda columna seleccionada para aplicar la operación."
+    },
+    {
+      "name": "col_dest_calcexp",
+      "type": "text",
+      "display_name": "Columna de destino",
+      "desc": "Columna de resultado",
+      "modalDesc": "Columna donde será visible el resultado."
+    }
+  ],
+  "description": "Realiza una operación entre dos columnas especificadas.",
+  "modalDesc": "Regla encargada de aplicar una operación aritmética específica entre dos columnas especificadas.",
+  "result": "El resultado de esta regla será visible en la columna de destino especificada por el usuario."
+},{
+  "_id": {
+    "$oid": "63d71573a3ef2dc9dc8633bb"
+  },
+  "name": "Reemplazar caracter",
+  "value": "replace_char",
+  "params": [
+    {
+      "name": "apply_cols_rechar",
+      "type": "text",
+      "display_name": "Columnas de aplicación",
+      "desc": "Columnas donde aplicar",
+      "modalDesc": "Columnas donde se aplicará la regla."
+    },
+    {
+      "name": "rep_char_values",
+      "type": "text",
+      "display_name": "Caracteres a reemplazar",
+      "desc": "Ingrese los caracteres",
+      "modalDesc": "Caracteres que se reemplazarán."
+    },
+    {
+      "name": "rep_value",
+      "type": "text",
+      "display_name": "Valor de reemplazo",
+      "desc": "Ingrese el caracter",
+      "modalDesc": "Valor por el que se reemplazarán los caracteres especificados."
+    }
+  ],
+  "description": "Reemplaza los caracteres por el seleccionado.",
+  "modalDesc": "Regla encargada de reemplazar los caracteres especificados por otro especificado por el usuario.",
+  "result": "El resultado de esta regla será visible en la columna de destino especificada por el usuario."
+}]
