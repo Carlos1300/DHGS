@@ -6,7 +6,6 @@ import json
 import pandas as pd
 from DHUtils import dhLogs as log
 from bson.objectid import ObjectId
-from openpyxl.workbook import Workbook
 from io import StringIO
 from DHUtils import dhUtilities
 from itertools import repeat
@@ -18,10 +17,8 @@ import operator
 import unidecode
 from datetime import date
 import datetime
-import openpyxl
 from bson.objectid import ObjectId
 import time
-# import xlsxwriter
 
 pd.set_option('display.float_format', lambda x: '%.2f' % x)
 

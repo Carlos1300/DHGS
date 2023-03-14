@@ -1,5 +1,5 @@
 from os import path
-from xlrd import open_workbook
+# from xlrd import open_workbook
 import  sys
 import pandas as pd
 import re
@@ -37,18 +37,18 @@ def chunk_partitioning_save(df, chunks):
     df_chunks = np.array_split(df, chunks)
     return df_chunks
 
-def VerificarExisteArchivo (FilePath):
-    if path.isfile(FilePath):
-        return 0
-    return 100 #ERRORCODENUMBER: archivo no existente
+# def VerificarExisteArchivo (FilePath):
+#     if path.isfile(FilePath):
+#         return 0
+#     return 100 #ERRORCODENUMBER: archivo no existente
 
-def VerificarExisteHojaXlxs (Archivo, Hoja):
-    xlsx = open_workbook(Archivo)
-    ExisteHoja = Hoja in xlsx.sheet_names()
-    xlsx.release_resources()
-    if ExisteHoja:
-        return 0
-    return 101 #ERRORCODENUMBER: de archivo no existente
+# def VerificarExisteHojaXlxs (Archivo, Hoja):
+#     xlsx = open_workbook(Archivo)
+#     ExisteHoja = Hoja in xlsx.sheet_names()
+#     xlsx.release_resources()
+#     if ExisteHoja:
+#         return 0
+#     return 101 #ERRORCODENUMBER: de archivo no existente
 
 def ValidarFecha(str):
     try:
