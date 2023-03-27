@@ -19,6 +19,7 @@ from datetime import date
 import datetime
 from bson.objectid import ObjectId
 import time
+from fuzzywuzzy import fuzz
 
 pd.set_option('display.float_format', lambda x: '%.2f' % x)
 
@@ -911,4 +912,98 @@ def replace_char(datasources, mainParams, stepdict= None):
     for col in columns:
         df_main[col] = df_main[col].apply(lambda x: rep(x))
         
+    return True, df_main
+
+def windowKey(datasources, mainParams, stepdict=None):
+
+    cols = [x.strip() for x in stepdict['windowkey_cols'].split(',')]
+    methods = [x.strip() for x in stepdict['windowkey_methods'].split(',')]
+    df_main = datasources['_main_ds']
+
+    windowKey = []
+
+    col_methods = {col: method for (col, method) in zip(cols, methods)}
+
+    for col in col_methods.keys():
+        if stepdict["wk_upper"].lower() != 'no':
+            if col_methods[col] == 'sub':
+                windowKey.append(list(map(lambda x : unidecode.unidecode(x[:int(stepdict["wk_sub_length"])].replace(' ', '').upper()), df_main[col].astype('string'))))
+            else:
+                windowKey.append(list(map(lambda x : jellyfish.soundex(unidecode.unidecode(x)).upper(), df_main[col].astype('string'))))
+        else:
+            if col_methods[col] == 'sub':
+                windowKey.append(list(map(lambda x : unidecode.unidecode(x[:int(stepdict["wk_sub_length"])].replace(' ', '').lower()), df_main[col].astype('string'))))
+            else:
+                windowKey.append(list(map(lambda x : jellyfish.soundex(unidecode.unidecode(x)).lower(), df_main[col].astype('string'))))
+
+    df_main["windowKey"] = list(map(''.join, zip(*windowKey)))
+    df_main.sort_values('windowKey', inplace=True)
+    
+    return True, df_main
+
+
+def matcher(datasources, mainParams, stepdict=None):
+
+    def exact_match(str1, str2):
+        if str1 == str2:
+            return 1
+        else:
+            return 0
+        
+    cols = [x.strip() for x in stepdict['matcher_cols'].split(',')]
+    methods = [x.strip() for x in stepdict['matcher_methods'].split(',')]
+    df_main = datasources['_main_ds']
+
+    g = df_main.groupby("windowKey")
+    sims = []
+    dup_flags = []
+
+    for group, data in g:
+        results = []
+        g_length = data.shape[0]
+
+        
+        if data.shape[0] == 1:
+            sims.append([-1])
+        
+        else:
+            vals = {i : {} for i in range(len(cols))}
+            for i in range(len(cols)):
+                vals[i]["col"] = cols[i]
+                vals[i]["values"] = data[cols[i]].values
+                vals[i]["method"] = methods[i]
+
+            for i in range(len(vals.keys())):
+                for j in range(len(vals[i]["values"])):
+                    res= []
+                    for k in range(len(vals[i]["values"])):
+                        match vals[i]["method"]:
+                            case 'E':
+                                res.append(exact_match(str(vals[i]["values"][j]), str(vals[i]["values"][k])))
+                            case 'J':
+                                res.append(jellyfish.jaro_winkler_similarity(str(vals[i]["values"][j]), str(vals[i]["values"][k])))
+                            case 'F':
+                                res.append(fuzz.ratio(str(vals[i]["values"][j]), str(vals[i]["values"][k]))/100)
+                    results.append(res)
+            s = list(map(lambda *res : round((sum(res) / len(vals.keys()))/ g_length, 2) * 100, *results))
+            first = True
+
+            for element in s:
+                if element >= stepdict["upper_bound"] and first:
+                    dup_flags.append(1)
+                    first = False
+                elif element < stepdict["upper_bound"]:
+                    dup_flags.append(1)
+                else:
+                    dup_flags.append(0)
+            
+            sims.append(s)
+        
+    flat_list = [item for sublist in sims for item in sublist]
+    df_main["Similarity %"] = flat_list
+    df_main["Unique"] = [1 if x < int(stepdict["lower_bound"]) else 0 for x in df_main["Similarity %"]]
+    df_main["Suspicious"] = [1 if int(stepdict["lower_bound"]) <= x < int(stepdict["upper_bound"]) else 0 for x in df_main["Similarity %"]]
+    df_main["Duplicate"] = [1 if x >= int(stepdict["upper_bound"]) else 0 for x in df_main["Similarity %"]]
+    df_main["Dup Flag"] = dup_flags
+
     return True, df_main
