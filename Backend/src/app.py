@@ -684,8 +684,8 @@ def apply_flow(project):
                     dhLogs.registrar_ejecucion_fallida_operacion_dataflow_prj( args['flow_id'], step )
                     break
         else:
-            print ('la operación no existe:' + step['operation'])
-            step['execute_error_text'] = 'la operación no existe:' + step['operation']
+            print ('la operación no existe:' + step['name'])
+            step['execute_error_text'] = 'la operación no existe:' + step['name']
             dhLogs.registrar_ejecucion_fallida_operacion_dataflow_prj(args['flow_id'], step)
 
     for val in datasources:
