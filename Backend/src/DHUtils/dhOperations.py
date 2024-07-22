@@ -773,6 +773,31 @@ def lower_col(datasources, mainParams, stepdict= None):
 
 	return True, df_main
 
+
+def capitalize_col(datasources, mainParams, stepdict= None):
+	"""
+	Método que elimina pone en minúsculas los dato de una serie de columnas.
+	:param df: DataFrame a utilizar.
+	:param columns: Lista de columnas donde se aplica la rutina.
+	"""
+
+	def title_data(dato):
+		dato = str(dato)
+		if dato.isnumeric() and dato != "" and dato != "NAN" and dato != "nan":
+			dato = dato.title()
+		else:
+			dato = dato
+		return dato
+
+	df_main = datasources['_main_ds']
+
+	columns = [x.strip() for x in stepdict['apply_cols_capcol'].split(',')]
+ 
+	for col in columns:
+		df_main[col] = df_main[col].apply(lambda x: title_data(x))
+
+	return True, df_main
+
 def num_to_bool(datasources, mainParams, stepdict= None):
 	"""
 	Método reemplaza valores numericos (0, 1) por valores booleanos.
